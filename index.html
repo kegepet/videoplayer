@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+  }
+  #vwrap, #vcontrols {
+    display: inline-block;
+    border: solid 1px red;
+    vertical-align: top;
+  }
+  #vwrap {
+    margin: 0;
+    padding: 0;
+  }
+  #thev {
+   /* width: 720px;
+    height: 480px;*/
+  }
+  #vcontrols {
+    width: 200px;
+    margin: 0;
+    padding: 0;
+  }
+  #vcontrols * {
+    display: block;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="vwrap">
+<video id="thev">
+  <source src="thevideo-edited.mp4" type="video/mp4">
+</video>
+</div>
+<div id="vcontrols">
+  <label for="dur">Duration</label>
+  <input type="text" id="dur" readonly>
+  <label for="cur">Current Time</label>
+  <input type="text" id="cur" readonly>
+  <label for="seekto">Seek To</label>
+  <input type="text" id="seekto" readonly>
+  <label for="seekint">Seek Interval (in secs)</label>
+  <input type="text" id="seekint" readonly>
+</div>
+
+<script>
+var vwrap = document.querySelector("#vwrap");
+vwrap.tabIndex = 1;
+vwrap.focus(); // this will allow it to receive key events
+var v = document.querySelector("#thev");
+var c = document.querySelector("#vcontrols");
+var dur = c.querySelector("#dur");
+var cur = c.querySelector("#cur");
+
+
+// RETRIEVE AND DISPLAY TIMES
+
+function zeroFill(num, fillTo) {
+  num = String(num);
+  while(fillTo - num.length) {
+    num = "0" + num;
+  }
+  return num;
+}
+
+function formatTime(secs) {
+  
+  var h = Math.floor(secs / 3600);
+  var m = Math.floor((secs / 60) - ((h * 3600) / 60));
+  var s = secs - (h * 3600) - (m * 60);
+  
+  return zeroFill(h, 2) + ":" + zeroFill(m, 2) + ":" + zeroFill(s, 2);
+}
+
+v.addEventListener("timeupdate", function (e) {
+  cur.value = formatTime(Math.floor(v.currentTime));
+});
+
+v.addEventListener("durationchange", function (e) {
+  dur.value = formatTime(Math.floor(v.duration));
+});
+
+
+// CONTROLS
+
+// navigation:
+// l/r arrow keys to scrub video
+// alt + l/r arrow keys will scrub according to the last-set seek interval
+// pageup/pagedown will scrub chapter markers
+// home/end will go to beginning and end
+// spacebar will play/pause
+// press and hold l/r key (after tempo timeout elapses) to advance a second at every interval (10x faster)
+// mousewheel to scrub chapter markers; left or middle mouse button to apply, right button or esc key to cancel
+
+
+var int = 100; // amount in milliseconds to run the interval
+var dir = 0; // -1 for rewind, 1 for fast-forward
+var maxSpeed = 30; // this is a multiple of 100 milliseconds
+var speedCnt = -1;
+var lastSpeed;
+  
+
+var mainInt = setInterval(function () {
+  
+  if ((speedCnt > -1) && (speedCnt < maxSpeed)) speedCnt += 1;
+  // (maxSpeed - speedCnt) will invert the value
+  // such that the higher the speed count, the slower the speed
+  if (dir) v.currentTime += (dir * (maxSpeed - speedCnt));
+}, int);
+
+vwrap.addEventListener("keydown", function (e) {
+  
+  e.preventDefault(); // prevents arrow keys from scrolling page and whatever else
+  // The fact that this handler is attached to vwrap and not window means that it will not preventDefault when vwrap loses focus.
+  console.log(e.target);
+});
+
+vwrap.addEventListener("keyup", function (e) {
+
+  // play/pause on keyup so it doesn't keep repeating, as it would on a keydown
+  if (/\s/.test(e.key)) v[v.paused ? "play" : "pause"]();
+  if (/home/i.test(e.key)) v.currentTime -= v.currentTime; // instead of setting to 0, since, this way, it automatically stays paused or continues playing
+  if (/end/i.test(e.key)) v.currentTime = v.duration;
+  // chapter markers
+  if (/pageup|arrowup/i.test(e.key));
+  if (/pagedown|arrowdown/i.test(e.key));
+  
+  if (e.key === "ArrowLeft") {
+    v.currentTime -= 10;
+  }
+  if (e.key === "ArrowRight") {
+    v.currentTime += 10;
+  }
+});
+
+vwrap.addEventListener("mouseup", function (e) {
+  
+  console.log(e.target);
+});
+v.addEventListener("mouseup", function (e) {
+  
+  console.log(e.target);
+});
+
+
+</script>
+
+</body>
+</html>
