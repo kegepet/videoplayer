@@ -99,43 +99,79 @@ v.addEventListener("durationchange", function (e) {
 // mousewheel to scrub chapter markers; left or middle mouse button to apply, right button or esc key to cancel
 
 
-var int = 100; // amount in milliseconds to run the interval
-var dir = 0; // -1 for rewind, 1 for fast-forward
-var maxSpeed = 30; // this is a multiple of 100 milliseconds
-var speedCnt = -1;
-var lastSpeed;
-  
+var int = 500; // amount in milliseconds to run the interval
+var skipBy = 10; // seconds to skip forward or backward
+var velBy = 5; // x5 with every velocity increment
+var autoOnDelay = 1; // in seconds
+var autoOffDelay = 2.5;
+var seek = {
+  init: 0, // timestamp of when action was initialized
+  vel: 0, // basically 'play'
+  auto: false
+};
 
 var mainInt = setInterval(function () {
   
-  if ((speedCnt > -1) && (speedCnt < maxSpeed)) speedCnt += 1;
-  // (maxSpeed - speedCnt) will invert the value
-  // such that the higher the speed count, the slower the speed
-  if (dir) v.currentTime += (dir * (maxSpeed - speedCnt));
+  if (seek.vel) {
+    v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
+  }
 }, int);
 
 vwrap.addEventListener("keydown", function (e) {
   
   e.preventDefault(); // prevents arrow keys from scrolling page and whatever else
   // The fact that this handler is attached to vwrap and not window means that it will not preventDefault when vwrap loses focus.
-  console.log(e.target);
+  
+  if (/left|right/i.test(e.key)) {
+    
+    var dir = /left/i.test(e.key) ? -1 : 1;
+    
+    if (!seek.vel) { // initialize new seek
+      seek.init = Date.now();
+      seek.vel = dir;
+      seek.auto = false;
+    }
+ 
+    else if (seek.auto && seek.init) return;
+    
+    else if (seek.auto && !seek.init) {
+      // increment/decrement velocity      
+      // (dir * seek.vel) < 0 because negative * positive will always be negative
+      // and vice versa, so if the product is negative, the vector has changed
+      seek.vel *= (((dir * seek.vel) > 0) ? velBy : (1 / velBy));
+      // (1 / velBy) inverts the number and shifts the velocity
+    }
+    
+    else if (!seek.auto && seek.init) {
+      // time in seconds between now and init time
+      seek.auto = (Date.now() - seek.init) >= (autoOnDelay * 1000);
+    }
+  }
 });
 
 vwrap.addEventListener("keyup", function (e) {
 
   // play/pause on keyup so it doesn't keep repeating, as it would on a keydown
   if (/\s/.test(e.key)) v[v.paused ? "play" : "pause"]();
-  if (/home/i.test(e.key)) v.currentTime -= v.currentTime; // instead of setting to 0, since, this way, it automatically stays paused or continues playing
-  if (/end/i.test(e.key)) v.currentTime = v.duration;
+  else if (/home/i.test(e.key)) v.currentTime -= v.currentTime; // instead of setting to 0, since, this way, it automatically stays paused or continues playing
+  else if (/end/i.test(e.key)) v.currentTime = v.duration;
   // chapter markers
-  if (/pageup|arrowup/i.test(e.key));
-  if (/pagedown|arrowdown/i.test(e.key));
-  
-  if (e.key === "ArrowLeft") {
-    v.currentTime -= 10;
-  }
-  if (e.key === "ArrowRight") {
-    v.currentTime += 10;
+  else if (/pageup|arrowup/i.test(e.key));
+  else if (/pagedown|arrowdown/i.test(e.key));
+  else if (/left|right/i.test(e.key)) {
+    
+    var dir = /left/i.test(e.key) ? -1 : 1;
+    
+    if (!seek.auto) {
+      seek.init = 0;
+      v.currentTime += ((dir < 0) ? -10 : 10);
+    }
+    else if (seek.auto && ((Date.now() - seek.init) >= (autoOffDelay * 1000))) {
+      // reset all
+      seek.init = 0;
+      seek.vel = 0;
+      seek.auto = false;
+    }
   }
 });
 
