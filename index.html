@@ -127,17 +127,27 @@ vwrap.addEventListener("keydown", function (e) {
     
     var dir = /left/i.test(e.key) ? -1 : 1;
     
-    if (!seek.vel) { // initialize new seek
+    // initialize new seek
+    if (!seek.vel) {
       seek.init = Date.now();
       seek.paused = v.paused;
       seek.vel = dir;
       seek.auto = false;
-      v.pause();
     }
- 
+    
+    // no change
     else if (seek.auto && seek.init) return;
     
+    // turn on auto seek
+    else if (!seek.auto && seek.init) {
+      // time in seconds between now and init time
+      seek.auto = (Date.now() - seek.init) >= (autoOnDelay * 1000);
+      if (seek.auto && !v.paused) v.pause();
+    }
+    
+    // shift seek velocity
     else if (seek.auto && !seek.init) {
+      seek.init = Date.now(); // begin new timer
       // increment/decrement velocity
       // (dir * seek.vel) < 0 because negative * positive will always be negative
       // and vice versa, so if the product is negative, the vector has changed
@@ -145,10 +155,6 @@ vwrap.addEventListener("keydown", function (e) {
       // (1 / velBy) inverts the number and shifts the velocity
     }
     
-    else if (!seek.auto && seek.init) {
-      // time in seconds between now and init time
-      seek.auto = (Date.now() - seek.init) >= (autoOnDelay * 1000);
-    }
   }
 });
 
@@ -177,7 +183,7 @@ vwrap.addEventListener("keyup", function (e) {
       v.currentTime += dir * skipBy;
     }
     else if (seek.auto && seek.init &&
-    ((Date.now() - seek.init) >= (autoOffDelay * 1000))) {
+          ((Date.now() - seek.init) >= (autoOffDelay * 1000))) {
       // reset all
       seek.init = 0;
       seek.vel = 0;
