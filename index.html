@@ -6,27 +6,63 @@
     margin: 0;
     padding: 0;
     font-size: 16px;
-  }
-  #vwrap, #vcontrols {
-    display: inline-block;
-    border: solid 1px red;
-    vertical-align: top;
+    background-color: #333;
   }
   #vwrap {
-    margin: 0;
-    padding: 0;
+    width: 855px;
+    height: 480px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+  }
+  #vwrap * {
+    position: absolute;
   }
   #thev {
-   /* width: 720px;
-    height: 480px;*/
+    width: 855px;
+    height: 480px;
   }
-  #vcontrols {
+  #info {
+    height: 90px;
+    bottom: 15px;
+    left: 10px;
+    right: 10px;
+    background-color: rgba(0,0,0,0.7);
+    color: white;
+    font-size: 0.8em;
+  }
+  #timeline {
+    height: 11px;
+    top: 10px;
+    left: 5px;
+    right: 5px;
+    background-color: purple;
+  }
+  #video_title, #time_info {
+    top: 36px;
+  }
+  #video_title {
     width: 200px;
+    left: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+  #time_info {
+    width: 150px;
+    right: 10px;
+  }
+  #time_info div {
+    position: relative;
+    display: inline;
+    width: 30px;
     margin: 0;
     padding: 0;
   }
-  #vcontrols * {
-    display: block;
+  #time_info div:first-child::after {
+    content: " / ";
   }
 </style>
 </head>
@@ -34,17 +70,9 @@
 <body>
 
 <div id="vwrap">
-<video id="thev">
+<video id="thev" data-title="Just a Test Video">
   <source src="thevideo-edited.mp4" type="video/mp4">
 </video>
-</div>
-<div id="vcontrols">
-  <label for="dur">Duration</label>
-  <input type="text" id="dur" readonly>
-  <label for="cur">Current Time</label>
-  <input type="text" id="cur" readonly>
-  <label for="vel">Velocity</label>
-  <input type="text" id="vel" readonly>
 </div>
 
 <script>
@@ -52,10 +80,29 @@ var vwrap = document.querySelector("#vwrap");
 vwrap.tabIndex = 1;
 vwrap.focus(); // this will allow it to receive key events
 var v = document.querySelector("#thev");
-var c = document.querySelector("#vcontrols");
-var dur = c.querySelector("#dur");
-var cur = c.querySelector("#cur");
-var vel = c.querySelector("#vel");
+
+
+// CREATE VIDEO INFO BOX AND TIMELINE
+var info = document.createElement("div"); // outer container
+info.id = "info";
+var tl = document.createElement("div");   // outer timeline
+tl.id = "timeline";
+var ph = document.createElement("div");   // playhead
+ph.id = "playhead";
+tl.appendChild(ph);
+info.appendChild(tl);
+var vt = document.createElement("div");   // video title
+vt.id = "video_title";
+vt.innerText = v.getAttribute("data-title");
+info.appendChild(vt);
+var ti = document.createElement("div");   // time info
+ti.id = "time_info";
+var cur = document.createElement("div");
+var dur = document.createElement("div");
+ti.appendChild(cur);
+ti.appendChild(dur);
+info.appendChild(ti);
+vwrap.appendChild(info);
 
 
 // RETRIEVE AND DISPLAY TIMES
@@ -78,11 +125,11 @@ function formatTime(secs) {
 }
 
 v.addEventListener("timeupdate", function (e) {
-  cur.value = formatTime(Math.floor(v.currentTime));
+  cur.innerText = formatTime(Math.floor(v.currentTime));
 });
 
 v.addEventListener("durationchange", function (e) {
-  dur.value = formatTime(Math.floor(v.duration));
+  dur.innerText = formatTime(Math.floor(v.duration));
 });
 
 
