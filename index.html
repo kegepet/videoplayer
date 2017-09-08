@@ -43,10 +43,8 @@
   <input type="text" id="dur" readonly>
   <label for="cur">Current Time</label>
   <input type="text" id="cur" readonly>
-  <label for="seekto">Seek To</label>
-  <input type="text" id="seekto" readonly>
-  <label for="seekint">Seek Interval (in secs)</label>
-  <input type="text" id="seekint" readonly>
+  <label for="vel">Velocity</label>
+  <input type="text" id="vel" readonly>
 </div>
 
 <script>
@@ -57,6 +55,7 @@ var v = document.querySelector("#thev");
 var c = document.querySelector("#vcontrols");
 var dur = c.querySelector("#dur");
 var cur = c.querySelector("#cur");
+var vel = c.querySelector("#vel");
 
 
 // RETRIEVE AND DISPLAY TIMES
@@ -106,14 +105,16 @@ var autoOnDelay = 1; // in seconds
 var autoOffDelay = 2.5;
 var seek = {
   init: 0, // timestamp of when action was initialized
+  paused: v.paused,
   vel: 0, // basically 'play'
   auto: false
 };
 
 var mainInt = setInterval(function () {
   
-  if (seek.vel) {
+  if (seek.auto) {
     v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
+    vel.value = seek.vel;
   }
 }, int);
 
@@ -128,14 +129,16 @@ vwrap.addEventListener("keydown", function (e) {
     
     if (!seek.vel) { // initialize new seek
       seek.init = Date.now();
+      seek.paused = v.paused;
       seek.vel = dir;
       seek.auto = false;
+      v.pause();
     }
  
     else if (seek.auto && seek.init) return;
     
     else if (seek.auto && !seek.init) {
-      // increment/decrement velocity      
+      // increment/decrement velocity
       // (dir * seek.vel) < 0 because negative * positive will always be negative
       // and vice versa, so if the product is negative, the vector has changed
       seek.vel *= (((dir * seek.vel) > 0) ? velBy : (1 / velBy));
@@ -152,8 +155,15 @@ vwrap.addEventListener("keydown", function (e) {
 vwrap.addEventListener("keyup", function (e) {
 
   // play/pause on keyup so it doesn't keep repeating, as it would on a keydown
-  if (/\s/.test(e.key)) v[v.paused ? "play" : "pause"]();
-  else if (/home/i.test(e.key)) v.currentTime -= v.currentTime; // instead of setting to 0, since, this way, it automatically stays paused or continues playing
+  if (/\s/.test(e.key)) { // play/pause
+    if (seek.vel) { // clear seek if one is in progress
+      seek.init = 0;
+      seek.vel = 0;
+      seek.auto = false;
+    }
+    v[v.paused ? "play" : "pause"]();
+  }
+  else if (/home/i.test(e.key)) v.currentTime = 0;
   else if (/end/i.test(e.key)) v.currentTime = v.duration;
   // chapter markers
   else if (/pageup|arrowup/i.test(e.key));
@@ -164,13 +174,15 @@ vwrap.addEventListener("keyup", function (e) {
     
     if (!seek.auto) {
       seek.init = 0;
-      v.currentTime += ((dir < 0) ? -10 : 10);
+      v.currentTime += dir * skipBy;
     }
-    else if (seek.auto && ((Date.now() - seek.init) >= (autoOffDelay * 1000))) {
+    else if (seek.auto && seek.init &&
+    ((Date.now() - seek.init) >= (autoOffDelay * 1000))) {
       // reset all
       seek.init = 0;
       seek.vel = 0;
       seek.auto = false;
+      seek.paused || v.play();
     }
   }
 });
