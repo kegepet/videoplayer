@@ -6,61 +6,119 @@
     margin: 0;
     padding: 0;
     font-size: 16px;
-  }
-  #vwrap, #vcontrols {
-    display: inline-block;
-    border: solid 1px red;
-    vertical-align: top;
+    background-color: #333;
   }
   #vwrap {
-    margin: 0;
-    padding: 0;
+    width: 855px;
+    height: 480px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    overflow: hidden;
+  }
+  #vwrap * {
+    position: absolute;
   }
   #thev {
-   /* width: 720px;
-    height: 480px;*/
+    width: 855px;
+    height: 480px;
   }
-  #vcontrols {
+  #info {
+    height: 50px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0,0,0,0.65);
+    color: white;
+    font-size: 0.8em;
+  }
+  #timeline {
+    height: 9px;
+    top: 7px;
+    left: 5px;
+    right: 5px;
+    background-color: #800080;
+    overflow: visible;
+  }
+  #playhead {
+    width: 7px;
+    height: 11px;
+    top: -1px;
+    background-color: #cc66cc;
+  }
+  #video_title, #time_info {
+    top: 25px;
+  }
+  #video_title {
     width: 200px;
+    left: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+  #time_info {
+    right: 10px;
+    white-space: nowrap;
+  }
+  #time_info div {
+    position: relative;
+    display: inline;
     margin: 0;
     padding: 0;
   }
-  #vcontrols * {
-    display: block;
+  #time_info div:first-child::after {
+    content: " / ";
   }
 </style>
 </head>
 
 <body>
-
+  
 <div id="vwrap">
-<video id="thev">
+<video id="thev" data-title="Just a Test Video">
   <source src="thevideo-edited.mp4" type="video/mp4">
 </video>
 </div>
-<div id="vcontrols">
-  <label for="dur">Duration</label>
-  <input type="text" id="dur" readonly>
-  <label for="cur">Current Time</label>
-  <input type="text" id="cur" readonly>
-  <label for="seekto">Seek To</label>
-  <input type="text" id="seekto" readonly>
-  <label for="seekint">Seek Interval (in secs)</label>
-  <input type="text" id="seekint" readonly>
-</div>
-
+  
 <script>
+  
 var vwrap = document.querySelector("#vwrap");
 vwrap.tabIndex = 1;
 vwrap.focus(); // this will allow it to receive key events
 var v = document.querySelector("#thev");
-var c = document.querySelector("#vcontrols");
-var dur = c.querySelector("#dur");
-var cur = c.querySelector("#cur");
+
+// CREATE ELEMENTS
+var info = document.createElement("div"); // outer container
+info.id = "info";
+var tl = document.createElement("div");   // outer timeline
+tl.id = "timeline";
+var ph = document.createElement("div");   // playhead
+ph.id = "playhead";
+tl.appendChild(ph);
+info.appendChild(tl);
+var vt = document.createElement("div");   // video title
+vt.id = "video_title";
+vt.innerText = v.getAttribute("data-title");
+info.appendChild(vt);
+var ti = document.createElement("div");   // time info
+ti.id = "time_info";
+var cur = document.createElement("div");
+var dur = document.createElement("div");
+ti.appendChild(cur);
+ti.appendChild(dur);
+info.appendChild(ti);
+vwrap.appendChild(info);
+  
+// initialize some values
+tl.w = parseInt(window.getComputedStyle(tl).width);
+ph.w = parseInt(window.getComputedStyle(ph).width);
 
 
 // RETRIEVE AND DISPLAY TIMES
-
+  
+// some utility functions
 function zeroFill(num, fillTo) {
   num = String(num);
   while(fillTo - num.length) {
@@ -77,13 +135,50 @@ function formatTime(secs) {
   
   return zeroFill(h, 2) + ":" + zeroFill(m, 2) + ":" + zeroFill(s, 2);
 }
+  
+  
+//  initialize some values
+cur.innerText = formatTime(0);
+var int = 500;
+var skipBy = 10; // seconds to skip forward or backward
+var velBy = 5; // x5 with every velocity increment
+var autoOnDelay = 1; // in seconds
+var autoOffDelay = 2.5;
+var seek = {
+  init: 0, // timestamp of when action was initialized
+  paused: v.paused,
+  vel: 0, // basically 'play'
+  auto: false
+};
+  
+
+var mainInt = setInterval(function () {
+  
+  // update timeline
+  if (v.currentTime != v.lastTime) { // careful references v.lastTime before it's been declared. May cause problems in strict mode
+    cur.innerText = formatTime(Math.floor(v.currentTime));
+    ph.style.left = (tl.w - ph.w) * (v.currentTime / v.duration) + "px";
+    v.lastTime = v.currentTime;
+  }
+  
+  // handle seek
+  if (seek.auto) {
+    v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
+  }
+}, int);
+
+  
 
 v.addEventListener("timeupdate", function (e) {
-  cur.value = formatTime(Math.floor(v.currentTime));
+  /*
+    Do not use timeupdate event since it's dispatched too fast and with inconsistent timing,
+    which is dependent on system load and other factors.
+    Instead update timeline and related elements through much slower interval above.
+  */
 });
 
 v.addEventListener("durationchange", function (e) {
-  dur.value = formatTime(Math.floor(v.duration));
+  dur.innerText = formatTime(Math.floor(v.duration));
 });
 
 
@@ -99,23 +194,7 @@ v.addEventListener("durationchange", function (e) {
 // mousewheel to scrub chapter markers; left or middle mouse button to apply, right button or esc key to cancel
 
 
-var int = 500; // amount in milliseconds to run the interval
-var skipBy = 10; // seconds to skip forward or backward
-var velBy = 5; // x5 with every velocity increment
-var autoOnDelay = 1; // in seconds
-var autoOffDelay = 2.5;
-var seek = {
-  init: 0, // timestamp of when action was initialized
-  vel: 0, // basically 'play'
-  auto: false
-};
 
-var mainInt = setInterval(function () {
-  
-  if (seek.vel) {
-    v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
-  }
-}, int);
 
 vwrap.addEventListener("keydown", function (e) {
   
@@ -126,34 +205,54 @@ vwrap.addEventListener("keydown", function (e) {
     
     var dir = /left/i.test(e.key) ? -1 : 1;
     
-    if (!seek.vel) { // initialize new seek
+    // initialize new seek
+    if (!seek.vel) {
       seek.init = Date.now();
+      seek.paused = v.paused;
       seek.vel = dir;
       seek.auto = false;
     }
- 
+    
+    // no change
     else if (seek.auto && seek.init) return;
     
+    // turn on auto seek
+    else if (!seek.auto && seek.init) {
+      // time in seconds between now and init time
+      seek.auto = (Date.now() - seek.init) >= (autoOnDelay * 1000);
+      if (seek.auto && !v.paused) v.pause();
+    }
+    
+    // shift seek velocity
     else if (seek.auto && !seek.init) {
-      // increment/decrement velocity      
+      console.log("hello");
+      seek.init = Date.now(); // begin new timer
+      // increment/decrement velocity
       // (dir * seek.vel) < 0 because negative * positive will always be negative
       // and vice versa, so if the product is negative, the vector has changed
       seek.vel *= (((dir * seek.vel) > 0) ? velBy : (1 / velBy));
       // (1 / velBy) inverts the number and shifts the velocity
     }
     
-    else if (!seek.auto && seek.init) {
-      // time in seconds between now and init time
-      seek.auto = (Date.now() - seek.init) >= (autoOnDelay * 1000);
+    else {
+      console.log("nope"); 
     }
+    
   }
 });
 
 vwrap.addEventListener("keyup", function (e) {
 
   // play/pause on keyup so it doesn't keep repeating, as it would on a keydown
-  if (/\s/.test(e.key)) v[v.paused ? "play" : "pause"]();
-  else if (/home/i.test(e.key)) v.currentTime -= v.currentTime; // instead of setting to 0, since, this way, it automatically stays paused or continues playing
+  if (/\s/.test(e.key)) { // play/pause
+    if (seek.vel) { // clear seek if one is in progress
+      seek.init = 0;
+      seek.vel = 0;
+      seek.auto = false;
+    }
+    v[v.paused ? "play" : "pause"]();
+  }
+  else if (/home/i.test(e.key)) v.currentTime = 0;
   else if (/end/i.test(e.key)) v.currentTime = v.duration;
   // chapter markers
   else if (/pageup|arrowup/i.test(e.key));
@@ -164,26 +263,36 @@ vwrap.addEventListener("keyup", function (e) {
     
     if (!seek.auto) {
       seek.init = 0;
-      v.currentTime += ((dir < 0) ? -10 : 10);
+      v.currentTime += dir * skipBy;
     }
-    else if (seek.auto && ((Date.now() - seek.init) >= (autoOffDelay * 1000))) {
+    else if (seek.auto && seek.init &&
+          ((Date.now() - seek.init) >= (autoOffDelay * 1000))) {
       // reset all
       seek.init = 0;
       seek.vel = 0;
       seek.auto = false;
+      seek.paused || v.play();
     }
   }
 });
 
 vwrap.addEventListener("mouseup", function (e) {
   
-  console.log(e.target);
+  //console.log(e.target);
 });
 v.addEventListener("mouseup", function (e) {
   
-  console.log(e.target);
+  //console.log(e.target);
 });
+  
+  
+// FOCUS SETTING
+vwrap.addEventListener("mouseenter", function (e) {
 
+});
+vwrap.addEventListener("mouseleave", function (e) {
+
+});
 
 </script>
 
