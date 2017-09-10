@@ -56,14 +56,13 @@
     animation-duration: 0.3s;
     animation-timing-function: ease-in;
     animation-fill-mode: both;
-    animation-delay: 1s;
   }
   #timeline {
     height: 9px;
     top: 7px;
     left: 5px;
     right: 5px;
-    background-color: #800080;
+    background-color: #601960;
     overflow: visible;
   }
   #buffered_ranges {
@@ -72,13 +71,13 @@
   }
   .buffered {
     height: 100%;
-    background-color: #be60bd;
+    background-color: #993a99;
   }
   #playhead {
     width: 7px;
     height: 11px;
     top: -1px;
-    background-color: #cc66cc;
+    background-color: #e096e0;
   }
   #video_title, #time_info {
     top: 25px;
@@ -173,6 +172,7 @@ function formatTime(secs) {
 
 //  initialize some values
 cur.innerText = formatTime(0);
+var infoOffDelay = 1; // delay in secs before info box goes off after a mouseleave
 var int = 500;
 var skipBy = 10; // seconds to skip forward or backward
 var velBy = 5; // x5 with every velocity increment
@@ -212,8 +212,8 @@ var mainInt = setInterval(function () {
     r.e = v.buffered.end(i);
     var s = r.s / v.duration;
     var e = r.e / v.duration;
-    r.style.left = s * tl.w + "px";
-    r.style.width = (e - s) * tl.w + "px";
+    r.style.left = tl.w * s + "px";
+    r.style.width = tl.w * (e - s) + "px";
   }
 
   // play progress
@@ -275,9 +275,6 @@ vwrap.addEventListener("keydown", function (e) {
       seek.auto = false;
     }
 
-    // no change
-    else if (seek.auto && seek.init) return;
-
     // turn on auto seek
     else if (!seek.auto && seek.init) {
       // time in seconds between now and init time
@@ -294,10 +291,6 @@ vwrap.addEventListener("keydown", function (e) {
       // and vice versa, so if the product is negative, the vector has changed
       seek.vel *= (((dir * seek.vel) > 0) ? velBy : (1 / velBy));
       // (1 / velBy) inverts the number and shifts the velocity
-    }
-
-    else {
-      console.log("nope");
     }
 
   }
@@ -335,6 +328,9 @@ vwrap.addEventListener("keyup", function (e) {
       seek.auto = false;
       seek.paused || v.play();
     }
+    else if (seek.auto && seek.init) {
+      seek.init = 0;
+    }
   }
 });
 
@@ -350,10 +346,14 @@ v.addEventListener("mouseup", function (e) {
 
 // FOCUS SETTING
 vwrap.addEventListener("mouseenter", function (e) {
+  clearTimeout(info.timeout);
   info.className = "on";
 });
 vwrap.addEventListener("mouseleave", function (e) {
-  info.className = "off";
+  
+  info.timeout = setTimeout(function () {
+    info.className = "off";
+  }, infoOffDelay * 1000);
 });
 
 </script>
