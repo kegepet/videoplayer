@@ -1,0 +1,91 @@
+#kvp-vwrap {
+  width: 855px;
+  height: 480px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  overflow: hidden;
+}
+#kvp-vwrap * {
+  position: absolute;
+}
+#kvp-thev {
+  width: 855px;
+  height: 480px;
+}
+#kvp-info {
+  height: 50px; /* keyframe should match */
+  bottom: -50px; /* this will change to 0 when turned on */
+  left: 0;
+  right: 0;
+  background-color: rgba(0,0,0,0.65);
+  color: white;
+  font-size: 0.8em;
+}
+@keyframes kvp_info_on {
+  from {bottom: -50px}
+  to   {bottom: 0}
+}
+@keyframes kvp_info_off {
+  from {bottom: 0}
+  to   {bottom: -50px}
+}
+#kvp-info.on {
+  animation-name: kvp_info_on;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+#kvp-info.off {
+  animation-name: kvp_info_off;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-in;
+  animation-fill-mode: both;
+}
+#kvp-timeline {
+  height: 9px;
+  top: 7px;
+  left: 5px;
+  right: 5px;
+  background-color: #601960;
+  overflow: visible;
+}
+#kvp-buffered-ranges {
+  width: 100%;
+  height: 100%;
+}
+.kvp-buffered {
+  height: 100%;
+  background-color: #993a99;
+}
+#kvp-playhead {
+  width: 7px;
+  height: 11px;
+  top: -1px;
+  background-color: #e096e0;
+}
+#kvp-video-title, #kvp-time-info {
+  top: 25px;
+}
+#kvp-video-title {
+  width: 200px;
+  left: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+#kvp-time-info {
+  right: 10px;
+  white-space: nowrap;
+}
+#kvp-time-info div {
+  position: relative;
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+#kvp-time-info div:first-child::after {
+  content: " / ";
+}
