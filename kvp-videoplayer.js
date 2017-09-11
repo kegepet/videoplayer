@@ -21,10 +21,10 @@ info.id = "kvp-info";
 var tl = this.tl = document.createElement("div");
 tl.id = "kvp-timeline";
 // container for buffered ranges in timeline
-var buf = this.buf = document.createElement("div");
+var buffered = this.buf = document.createElement("div");
 // ranges of buffered segments in timeline
-buf.id = "kvp-buffered-ranges";
-tl.appendChild(buf);
+buffered.id = "kvp-buffered-ranges";
+tl.appendChild(buffered);
 // ranges of played segments in timeline
 var played = this.played = document.createElement("div");
 played.id = "kvp-played-ranges";
@@ -57,6 +57,7 @@ info.appendChild(ti);
 vwrap.appendChild(info);
 
 // initialize some values
+// these will need to be reset anytime the window or video size changes
 tl.rect = tl.getBoundingClientRect();
 ph.rect = ph.getBoundingClientRect();
 
@@ -95,36 +96,38 @@ var seek = this.seek = {
 
 var mainInt = setInterval(function () {
 
-  // update timeline
-
-  // buffered ranges
-  for (var i = 0; i < v.buffered.length; i++) {
-    // go through any possible ranges that already exist
-    // if the current one shares a start time with an existing one, do not create new
-    var rgs = buf.querySelectorAll(".kvp-buffered");
-    var exists = function () {
-      for (var j in rgs) {
-        if (rgs[j].s == v.buffered.start(i)) return rgs[j];
-      }
-      return null;
-    }();
-    var r = function () {
-      if (exists) return exists;
-      var d = document.createElement("div");
-      d.className = "kvp-buffered";
-      buf.appendChild(d);
-      return d;
-    }();
-    r.s = v.buffered.start(i);
-    r.e = v.buffered.end(i);
-    var s = r.s / v.duration;
-    var e = r.e / v.duration;
-    r.style.left = tl.rect.width * s + "px";
-    r.style.width = tl.rect.width * (e - s) + "px";
-  }
+  // create and update ranges
+  ["buffered", "played"].forEach(function (range) {
+    
+    var c = document.querySelector("#kvp-" + range + "-ranges");
+    for (var i = 0; i < v[range].length; i++) {
+      // go through any possible ranges that already exist
+      // if the current one shares a start time with an existing one, do not create new
+      var rgs = c.querySelectorAll(".kvp-" + range);
+      var exists = function () {
+        for (var j in rgs) {
+          if (rgs[j].s == v[range].start(i)) return rgs[j];
+        }
+        return null;
+      }();
+      var r = function () {
+        if (exists) return exists;
+        var d = document.createElement("div");
+        d.className = "kvp-" + range;
+        c.appendChild(d);
+        return d;
+      }();
+      r.s = v[range].start(i);
+      r.e = v[range].end(i);
+      var s = r.s / v.duration;
+      var e = r.e / v.duration;
+      r.style.left = tl.rect.width * s + "px";
+      r.style.width = tl.rect.width * (e - s) + "px";
+    }
+  });
 
   // play progress
-  if (v.currentTime != v.lastTime) { // careful references v.lastTime before it's been declared. May cause problems in strict mode
+  if (v.currentTime != v.lastTime) {
     cur.innerText = formatTime(Math.floor(v.currentTime));
     if (!ph.dragging) ph.style.left = tl.rect.width * (v.currentTime / v.duration) - (ph.rect.width / 2) + "px";
     v.lastTime = v.currentTime;
@@ -259,8 +262,8 @@ function timelineInput(e) {
     ph.cursorX = e.offsetX;
   }
   if (ph.dragging && (e.type == 'mouseup')) {
-    v.currentTime = v.duration * (ph.offsetLeft + (ph.rect.width / 2) / tl.rect.width);
     ph.dragging = false;
+    v.currentTime = v.duration * ((ph.offsetLeft + (ph.rect.width / 2)) / tl.rect.width);
   }
   if (ph.dragging && e.type == 'mousemove') {
     ph.style.left = Math.max(-ph.rect.width / 2, Math.min(tl.rect.width - (ph.rect.width / 2), e.clientX - tl.rect.left - ph.cursorX)) + "px";

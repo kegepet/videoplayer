@@ -70,7 +70,7 @@
 }
 .kvp-played {
   height: 2px;
-  bottom: 0;
+  bottom: -1px;
   background-color: #f4d742;
 }
 .kvp-highlights {
