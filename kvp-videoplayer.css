@@ -78,8 +78,9 @@
   top: -3px;
 }
 #kvp-playhead {
-  width: 7px;
+  width: 6px;
   height: 11px;
+  left: -3px; /* half the width */
   top: -1px;
   background-color: #e096e0;
 }

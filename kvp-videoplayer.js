@@ -126,7 +126,7 @@ var mainInt = setInterval(function () {
   // play progress
   if (v.currentTime != v.lastTime) { // careful references v.lastTime before it's been declared. May cause problems in strict mode
     cur.innerText = formatTime(Math.floor(v.currentTime));
-    if (!ph.dragging) ph.style.left = (tl.rect.width - ph.rect.width) * (v.currentTime / v.duration) + "px";
+    if (!ph.dragging) ph.style.left = tl.rect.width * (v.currentTime / v.duration) - (ph.rect.width / 2) + "px";
     v.lastTime = v.currentTime;
   }
 
@@ -259,14 +259,13 @@ function timelineInput(e) {
     ph.cursorX = e.offsetX;
   }
   if (ph.dragging && (e.type == 'mouseup')) {
+    v.currentTime = v.duration * (ph.offsetLeft + (ph.rect.width / 2) / tl.rect.width);
     ph.dragging = false;
-    v.currentTime = v.duration * (ph.offsetLeft / (tl.rect.width - ph.rect.width));
   }
   if (ph.dragging && e.type == 'mousemove') {
-    ph.style.left = (tl.rect.width - ph.rect.width) * Math.max(0, Math.min(1, (e.clientX - tl.rect.left - ph.cursorX) / (tl.rect.width - ph.rect.width))) + "px";
+    ph.style.left = Math.max(-ph.rect.width / 2, Math.min(tl.rect.width - (ph.rect.width / 2), e.clientX - tl.rect.left - ph.cursorX)) + "px";
   }
   if (e.type == 'click') {
-    //console.log(e.target);
     v.currentTime = v.duration * ((e.clientX - tl.rect.left) / tl.rect.width);
   }
 }
