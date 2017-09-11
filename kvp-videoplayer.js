@@ -14,33 +14,51 @@ vwrap.focus(); // this will allow it to receive key events
 var v = this.v = document.querySelector("#kvp-thev");
 
 // CREATE ELEMENTS
-var info = this.info = document.createElement("div"); // outer container
+// outer container
+var info = this.info = document.createElement("div");
 info.id = "kvp-info";
-var tl = this.tl = document.createElement("div");   // outer timeline
+// outer timeline
+var tl = this.tl = document.createElement("div");
 tl.id = "kvp-timeline";
-var buf = this.buf = document.createElement("div");  // container for buffered ranges in timeline
+// container for buffered ranges in timeline
+var buf = this.buf = document.createElement("div");
+// ranges of buffered segments in timeline
 buf.id = "kvp-buffered-ranges";
 tl.appendChild(buf);
-var ph = this.ph = document.createElement("div");   // playhead
+// ranges of played segments in timeline
+var played = this.played = document.createElement("div");
+played.id = "kvp-played-ranges";
+tl.appendChild(played);
+// ranges of highlighted segments in timeline
+var highlights = this.highlights = document.createElement("div");
+highlights.id = "kvp-highlight-ranges";
+tl.appendChild(highlights);
+// playhead
+var ph = this.ph = document.createElement("div");
 ph.id = "kvp-playhead";
 tl.appendChild(ph);
 info.appendChild(tl);
-var vt = this.vt = document.createElement("div");   // video title
+// video title
+var vt = this.vt = document.createElement("div");
 vt.id = "kvp-video-title";
 vt.innerText = v.getAttribute("data-title");
 info.appendChild(vt);
-var ti = this.ti = document.createElement("div");   // time info
+// time info
+var ti = this.ti = document.createElement("div");
 ti.id = "kvp-time-info";
+// textual display for current time
 var cur = this.cur = document.createElement("div");
-var dur = this.dur = document.createElement("div");
 ti.appendChild(cur);
+// textual display for duration
+var dur = this.dur = document.createElement("div");
 ti.appendChild(dur);
+// finally:
 info.appendChild(ti);
 vwrap.appendChild(info);
 
 // initialize some values
-tl.w = parseInt(window.getComputedStyle(tl).width);
-ph.w = parseInt(window.getComputedStyle(ph).width);
+tl.rect = tl.getBoundingClientRect();
+ph.rect = ph.getBoundingClientRect();
 
 
 // RETRIEVE AND DISPLAY TIMES
@@ -101,14 +119,14 @@ var mainInt = setInterval(function () {
     r.e = v.buffered.end(i);
     var s = r.s / v.duration;
     var e = r.e / v.duration;
-    r.style.left = tl.w * s + "px";
-    r.style.width = tl.w * (e - s) + "px";
+    r.style.left = tl.rect.width * s + "px";
+    r.style.width = tl.rect.width * (e - s) + "px";
   }
 
   // play progress
   if (v.currentTime != v.lastTime) { // careful references v.lastTime before it's been declared. May cause problems in strict mode
     cur.innerText = formatTime(Math.floor(v.currentTime));
-    ph.style.left = (tl.w - ph.w) * (v.currentTime / v.duration) + "px";
+    if (!ph.dragging) ph.style.left = (tl.rect.width - ph.rect.width) * (v.currentTime / v.duration) + "px";
     v.lastTime = v.currentTime;
   }
 
@@ -150,6 +168,13 @@ localStorage for storing user-based placeholders in video.
 Fragment identifier (#) addresses for linking to specific time/placeholder, idk.
 Maybe pageup/pagedown will cycle through them.
 Then, if video has chapter markers, up/down to cycle through them.
+
+localStorage for highlights
+pageUp/pageDown cycles through highlights
+
+double-clicking playhead will copy the current location into the clipboard or fill out any focused text field with that value.
+
+
 */
 
 vwrap.addEventListener("keydown", function (e) {
@@ -227,14 +252,31 @@ vwrap.addEventListener("keyup", function (e) {
   }
 });
 
-vwrap.addEventListener("mouseup", function (e) {
+function timelineInput(e) {
 
-  //console.log(e.target);
-});
-v.addEventListener("mouseup", function (e) {
+  if ((e.target == ph) && (e.type == 'mousedown')) {
+    ph.dragging = true;
+    ph.cursorX = e.offsetX;
+  }
+  if (ph.dragging && (e.type == 'mouseup')) {
+    ph.dragging = false;
+    v.currentTime = v.duration * (ph.offsetLeft / (tl.rect.width - ph.rect.width));
+  }
+  if (ph.dragging && e.type == 'mousemove') {
+    ph.style.left = (tl.rect.width - ph.rect.width) * Math.max(0, Math.min(1, (e.clientX - tl.rect.left - ph.cursorX) / (tl.rect.width - ph.rect.width))) + "px";
+  }
+  if (e.type == 'click') {
+    //console.log(e.target);
+    v.currentTime = v.duration * ((e.clientX - tl.rect.left) / tl.rect.width);
+  }
+}
 
-  //console.log(e.target);
-});
+
+window.addEventListener('mousedown', timelineInput);
+window.addEventListener('mouseup', timelineInput);
+window.addEventListener('mousemove', timelineInput);
+tl.addEventListener('click', timelineInput);
+ph.addEventListener('dblclick', timelineInput);
 
 
 // FOCUS SETTING
