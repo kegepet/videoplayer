@@ -55,7 +55,7 @@
   top: 7px;
   left: 5px;
   right: 5px;
-  background-color: #881b96;
+  background-color: #731296;
   overflow: visible;
 }
 
@@ -66,18 +66,19 @@
 }
 .kvp-buffered {
   height: 100%;
-  background-color: #9925a8;
+  background-color: #a540c9;
 }
 .kvp-played {
   height: 2px;
   bottom: -1px;
-  background-color: #e096e0;
+  background-color: #dfb8ed; /* nice if it matches the playhead */
 }
 
 /* user-defined ranges */
 .kvp-highlights {
   height: 3px;
-  top: -3px;
+  top: -2px;
+  color: #ff7700;
 }
 
 #kvp-playhead {
@@ -85,7 +86,7 @@
   height: 11px;
   left: -3px; /* half the width */
   top: -1px;
-  background-color: #e096e0;
+  background-color: #dfb8ed;
 }
 #kvp-video-title, #kvp-time-info {
   top: 25px;
