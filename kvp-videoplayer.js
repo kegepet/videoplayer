@@ -86,81 +86,78 @@ var seek = this.seek = {
 };
 
 
-var mainInt = setInterval(function () {
+// frequency info for each main loop section
+var freq = {
+  ranges: {every: 250, last: null},
+  playhead: {every: 250, last: null},
+  autoseek: {every: 500, last: null}
+};
+// main animation loop for updating timeline and whatever else
+function mainAnimLoop(timestamp) {
 
   // create and update range
-  var c = ranges;
-  ranges = this.ranges = document.createElement('div');
-  ranges.id = 'kvp-ranges';
-
-  ["buffered", "played"].forEach(function (rangeType) {
-
-    for (var i = 0; i < v[rangeType].length; i++) {
-
-      var r = document.createElement('div');
-      r.className = 'kvp-' + rangeType;
-      var s = v[rangeType].start(i) / v.duration;
-      var e = v[rangeType].end(i) / v.duration;
-      r.style.left = tl.rect.width * s + "px";
-      r.style.width = tl.rect.width * (e - s) + "px";
-      ranges.appendChild(r);
-    }
-  });
-  tl.replaceChild(ranges, c);
-
+  if (!freq.ranges.last || ((timestamp - freq.ranges.last) >= freq.ranges.every)) {
+  
+    freq.ranges.last = timestamp;
+  
+    var c = ranges;
+    ranges = this.ranges = document.createElement('div');
+    ranges.id = 'kvp-ranges';
+  
+    ["buffered", "played"].forEach(function (rangeType) {
+  
+      for (var i = 0; i < v[rangeType].length; i++) {
+  
+        var r = document.createElement('div');
+        r.className = 'kvp-' + rangeType;
+        var s = v[rangeType].start(i) / v.duration;
+        var e = v[rangeType].end(i) / v.duration;
+        r.style.left = tl.rect.width * s + "px";
+        r.style.width = tl.rect.width * (e - s) + "px";
+        ranges.appendChild(r);
+      }
+    });
+    tl.replaceChild(ranges, c);
+  }
+  
   // play progress
-  if (v.currentTime != v.lastTime) {
-    cur.innerText = formatTime(Math.floor(v.currentTime));
-    if (!ph.dragging) ph.style.left = tl.rect.width * (v.currentTime / v.duration) - (ph.rect.width / 2) + "px";
-    v.lastTime = v.currentTime;
+  if (!freq.playhead.last || ((timestamp - freq.playhead.last) >= freq.playhead.every)) {
+  
+    freq.playhead.last = timestamp;
+  
+    if (v.currentTime != v.lastTime) {
+      cur.innerText = formatTime(Math.floor(v.currentTime));
+      if (!ph.dragging) ph.style.left = tl.rect.width * (v.currentTime / v.duration) - (ph.rect.width / 2) + "px";
+      v.lastTime = v.currentTime;
+    }
   }
 
   // handle seek
-  if (seek.auto) {
-    v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
+  if (!freq.autoseek.last || ((timestamp - freq.autoseek.last) >= freq.autoseek.every)) {
+  
+    freq.autoseek.last = timestamp;
+    
+    if (seek.auto) {
+      v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
+    }
   }
-}.bind(this), int);
+  window.requestAnimationFrame(mainAnimLoop.bind(this));
+}
+window.requestAnimationFrame(mainAnimLoop.bind(this));
 
 
-
-v.addEventListener("timeupdate", function (e) {
-  /*
-    Do not use timeupdate event since it's dispatched too fast and with inconsistent timing,
-    which is dependent on system load and other factors.
-    Instead update timeline and related elements through much slower interval above.
-  */
-});
+/*
+Do not use timeupdate event since it's dispatched too fast and with inconsistent timing,
+which is dependent on system load and other factors.
+Instead update timeline and related elements through much slower interval above.
+    
+v.addEventListener("timeupdate", function (e) {});
+*/
 
 v.addEventListener("durationchange", function (e) {
   dur.innerText = formatTime(Math.floor(v.duration));
 });
 
-
-// CONTROLS
-
-// navigation:
-// spacebar will play/pause
-// l/r arrow keys to skip ahead and back 10 seconds
-// hold l/r for 1+ sec to auto-seek
-// hitting l/r while in auto-seek will increase/decrease seek velocity
-// home/end will go to beginning and end
-// pageup/pagedown will scrub chapter markers
-// mousewheel to scrub chapter markers; left or middle mouse button to apply, right button or esc key to cancel
-
-/*
-ideas:
-localStorage for storing user-based placeholders in video.
-Fragment identifier (#) addresses for linking to specific time/placeholder, idk.
-Maybe pageup/pagedown will cycle through them.
-Then, if video has chapter markers, up/down to cycle through them.
-
-localStorage for highlights
-pageUp/pageDown cycles through highlights
-
-double-clicking playhead will copy the current location into the clipboard or fill out any focused text field with that value.
-
-
-*/
 
 vwrap.addEventListener("keydown", function (e) {
 
