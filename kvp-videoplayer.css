@@ -58,9 +58,9 @@
   background-color: #601960;
   overflow: visible;
 }
-#kvp-buffered-ranges,
-#kvp-played-ranges,
-#kvp-highlight-ranges  {
+
+/* transient, automatic ranges */
+#kvp-ranges {
   width: 100%;
   height: 100%;
 }
@@ -71,12 +71,15 @@
 .kvp-played {
   height: 2px;
   bottom: -1px;
-  background-color: #f4d742;
+  background-color: #e096e0;
 }
+
+/* user-defined ranges */
 .kvp-highlights {
   height: 3px;
   top: -3px;
 }
+
 #kvp-playhead {
   width: 6px;
   height: 11px;
