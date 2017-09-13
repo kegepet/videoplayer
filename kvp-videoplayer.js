@@ -1,4 +1,4 @@
-var kvp = new (function () { // "kepe video player" namespace
+var kvp = new (function () { // 'kepe video player' namespace
 ////////////////////////////////////////////////////////
 
 var infoOffDelay = this.infoOffDelay = 1; // delay in secs before info box goes off after a mouseleave
@@ -8,45 +8,68 @@ var velBy = this.velBy = 3; // x5 with every velocity increment
 var autoOnDelay = this.autoOnDelay = 1; // in seconds
 var autoOffDelay = this.autoOffDelay = 2.5;
 
-var vwrap = this.vwrap = document.querySelector("#kvp-vwrap");
+var vwrap = this.vwrap = document.querySelector('#kvp-vwrap');
 vwrap.tabIndex = 1;
 vwrap.focus(); // this will allow it to receive key events
-var v = this.v = document.querySelector("#kvp-thev");
+var v = this.v = document.querySelector('#kvp-thev');
 
 // CREATE ELEMENTS
 // outer container
-var info = this.info = document.createElement("div");
-info.id = "kvp-info";
+var info = this.info = document.createElement('div');
+info.id = 'kvp-info';
+// add/edit highlights dialogue
+var hledit = this.hlbox = info.appendChild(document.createElement('div'));
+hledit.id = 'kvp-highlight-edit';
+hledit.note = hledit.appendChild(document.createElement('textarea'));
+hledit.note.id = 'kvp-highlight-edit-note';
+hledit.note.placeholder = 'Leave your note here.';
+hledit.start = hledit.appendChild(document.createElement('input'));
+hledit.start.id = 'kvp-highlight-edit-start';
+hledit.start.type = 'text';
+hledit.startLabel = hledit.appendChild(document.createElement('label'));
+hledit.startLabel.setAttribute('for', 'kvp-highlight-edit-start');
+hledit.startLabel.appendChild(document.createTextNode('START'));
+hledit.end = hledit.appendChild(document.createElement('input'));
+hledit.end.id = 'kvp-highlight-edit-end';
+hledit.end.type = 'text';
+hledit.endLabel = hledit.appendChild(document.createElement('label'));
+hledit.endLabel.setAttribute('for', 'kvp-highlight-edit-end');
+hledit.endLabel.appendChild(document.createTextNode('END'));
+hledit.save = hledit.appendChild(document.createElement('div'));
+hledit.save.id = 'kvp-highlight-edit-save';
+hledit.discard = hledit.appendChild(document.createElement('div'));
+hledit.discard.id = 'kvp-highlight-edit-discard';
+hledit.cancel = hledit.appendChild(document.createElement('div'));
+hledit.cancel.id = 'kvp-highlight-edit-cancel';
 // outer timeline
-var tl = this.tl = document.createElement("div");
-tl.id = "kvp-timeline";
+var tl = this.tl = info.appendChild(document.createElement('div'));
+tl.id = 'kvp-timeline';
 // container for transient, automatic range types (buffered, played, etc) in timeline
 // container is necessary for one-shot per frame reflow when creating and removing ranges
-var ranges = this.ranges = document.createElement("div");
-ranges.id = "kvp-ranges";
-tl.appendChild(ranges);
+var ranges = this.ranges = tl.appendChild(document.createElement('div'));
+ranges.id = 'kvp-ranges';
 // playhead
-var ph = this.ph = document.createElement("div");
-ph.id = "kvp-playhead";
+var ph = this.ph = tl.appendChild(document.createElement('div'));
+ph.id = 'kvp-playhead';
 ph.w = ph.getBoundingClientRect().width;
-tl.appendChild(ph);
-info.appendChild(tl);
 // video title
-var vt = this.vt = document.createElement("div");
-vt.id = "kvp-video-title";
-vt.innerText = v.getAttribute("data-title");
-info.appendChild(vt);
+var vt = this.vt = info.appendChild(document.createElement('div'));
+vt.id = 'kvp-video-title';
+vt.innerText = v.getAttribute('data-title');
+// add highlight button
+var addHLBtn = info.appendChild(document.createElement('div'));
+addHLBtn.id = 'add-highlight-button';
 // time info
-var ti = this.ti = document.createElement("div");
-ti.id = "kvp-time-info";
+var ti = this.ti = info.appendChild(document.createElement('div'));
+ti.id = 'kvp-time-info';
 // textual display for current time
-var cur = this.cur = document.createElement("div");
-ti.appendChild(cur);
+var cur = this.cur = ti.appendChild(document.createElement('div'));
+cur.id = 'kvp-current-time';
 // textual display for duration
-var dur = this.dur = document.createElement("div");
-ti.appendChild(dur);
+var dur = this.dur = ti.appendChild(document.createElement('div'));
+dur.id = 'kvp-duration';
+
 // finally:
-info.appendChild(ti);
 vwrap.appendChild(info);
 
 
@@ -56,7 +79,7 @@ vwrap.appendChild(info);
 function zeroFill(num, fillTo) {
   num = String(num);
   while(fillTo - num.length) {
-    num = "0" + num;
+    num = '0' + num;
   }
   return num;
 }
@@ -67,10 +90,10 @@ function formatTime(secs) {
   var m = Math.floor((secs / 60) - ((h * 3600) / 60));
   var s = secs - (h * 3600) - (m * 60);
 
-  return zeroFill(h, 2) + ":" + zeroFill(m, 2) + ":" + zeroFill(s, 2);
+  return zeroFill(h, 2) + ':' + zeroFill(m, 2) + ':' + zeroFill(s, 2);
 }
 //  initialize some values
-cur.innerText = formatTime(0);
+//cur.innerText = formatTime(0);
 
 
 // seek object schema
@@ -100,7 +123,7 @@ function mainAnimLoop(timestamp) {
     ranges = this.ranges = document.createElement('div');
     ranges.id = 'kvp-ranges';
 
-    ["buffered", "played"].forEach(function (rangeType) {
+    ['buffered', 'played'].forEach(function (rangeType) {
 
       for (var i = 0; i < v[rangeType].length; i++) {
 
@@ -108,8 +131,8 @@ function mainAnimLoop(timestamp) {
         r.className = 'kvp-' + rangeType;
         var s = v[rangeType].start(i) / v.duration;
         var e = v[rangeType].end(i) / v.duration;
-        r.style.left = tl.rect.width * s + "px";
-        r.style.width = tl.rect.width * (e - s) + "px";
+        r.style.left = tl.rect.width * s + 'px';
+        r.style.width = tl.rect.width * (e - s) + 'px';
         ranges.appendChild(r);
       }
     });
@@ -120,11 +143,14 @@ function mainAnimLoop(timestamp) {
   if ((timestamp - freq.playhead.last) >= freq.playhead.every) {
     freq.playhead.last = timestamp;
 
-    tl.rect = tl.getBoundingClientRect();
-    if (v.currentTime != v.lastTime) {
-      cur.innerText = formatTime(Math.floor(v.currentTime));
-      if (!ph.dragging) ph.style.left = tl.rect.width * (v.currentTime / v.duration) - (ph.w / 2) + "px";
-      v.lastTime = v.currentTime;
+    if (!dur.time || (dur.time != v.duration)) {
+      dur.innerText = formatTime(Math.floor(dur.time = v.duration));
+    }
+    if (!cur.time || (cur.time != v.currentTime)) {
+      cur.innerText = formatTime(Math.floor(cur.time = v.currentTime));
+      if (ph.dragging) return;
+      tl.rect = tl.getBoundingClientRect();
+      ph.style.left = tl.rect.width * (v.currentTime / v.duration) - (ph.w / 2) + 'px';
     }
   }
 
@@ -146,15 +172,13 @@ Do not use timeupdate event since it's dispatched too fast and with inconsistent
 which is dependent on system load and other factors.
 Instead update timeline and related elements through much slower interval above.
 
-v.addEventListener("timeupdate", function (e) {});
+v.addEventListener('timeupdate', function (e) {});
 */
 
-v.addEventListener("durationchange", function (e) {
-  dur.innerText = formatTime(Math.floor(v.duration));
-});
+//v.addEventListener('durationchange', function (e) {});
 
 
-vwrap.addEventListener("keydown", function (e) {
+vwrap.addEventListener('keydown', function (e) {
 
   e.preventDefault(); // prevents arrow keys from scrolling page and whatever else
   // The fact that this handler is attached to vwrap and not window means that it will not preventDefault when vwrap loses focus.
@@ -191,7 +215,7 @@ vwrap.addEventListener("keydown", function (e) {
   }
 });
 
-vwrap.addEventListener("keyup", function (e) {
+vwrap.addEventListener('keyup', function (e) {
 
   // play/pause on keyup so it doesn't keep repeating, as it would on a keydown
   if (/\s/.test(e.key)) { // play/pause
@@ -200,7 +224,7 @@ vwrap.addEventListener("keyup", function (e) {
       seek.vel = 0;
       seek.auto = false;
     }
-    v[v.paused ? "play" : "pause"]();
+    v[v.paused ? 'play' : 'pause']();
   }
   else if (/home/i.test(e.key)) v.currentTime = 0;
   else if (/end/i.test(e.key)) v.currentTime = v.duration;
@@ -245,7 +269,7 @@ function timelineInput(e) {
     v.currentTime = v.duration * ((ph.offsetLeft + (ph.w / 2)) / tl.rect.width);
   }
   else if (ph.dragging && e.type == 'mousemove') {
-    ph.style.left = Math.max(-ph.w / 2, Math.min(tl.rect.width - (ph.w / 2), e.clientX - tl.rect.left - ph.cursorX)) + "px";
+    ph.style.left = Math.max(-ph.w / 2, Math.min(tl.rect.width - (ph.w / 2), e.clientX - tl.rect.left - ph.cursorX)) + 'px';
   }
   else if (e.type == 'click') {
     v.currentTime = v.duration * ((e.clientX - tl.rect.left) / tl.rect.width);
@@ -271,14 +295,14 @@ ph.addEventListener('dblclick', timelineInput);
 
 
 // control panel/timeline visibility
-vwrap.addEventListener("mouseenter", function (e) {
+vwrap.addEventListener('mouseenter', function (e) {
   clearTimeout(info.timeout);
-  info.className = "on";
+  info.className = 'on';
 });
-vwrap.addEventListener("mouseleave", function (e) {
+vwrap.addEventListener('mouseleave', function (e) {
 
   info.timeout = setTimeout(function () {
-    info.className = "off";
+    info.className = 'off';
   }, infoOffDelay * 1000);
 });
 

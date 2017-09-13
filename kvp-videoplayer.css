@@ -32,24 +32,127 @@
 }
 @keyframes kvp_info_on {
   from {bottom: -50px}
-  to   {bottom: 0}
+    to   {bottom: 0}
 }
 @keyframes kvp_info_off {
   from {bottom: 0}
-  to   {bottom: -50px}
+    to   {bottom: -50px}
 }
 #kvp-info.on {
   animation-name: kvp_info_on;
-  animation-duration: 0.3s;
+  animation-duration: 0.2s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
 }
 #kvp-info.off {
   animation-name: kvp_info_off;
-  animation-duration: 0.3s;
+  animation-duration: 0.2s;
   animation-timing-function: ease-in;
   animation-fill-mode: both;
 }
+#kvp-highlight-edit {
+  height: 70px;
+  top: -70px;
+  width: 100%;
+  background-color: rgba(0,0,0,0.65);
+  overflow: hidden;
+}
+@keyframes kvp_highlight_edit_on {
+  from {top: 0; height: 0}
+    to {top: -70px; height: 70px}
+}
+@keyframes kvp_highlight_edit_off {
+  from {top: -70px; height: 70px}
+    to {top: 0; height: 0}
+}
+#kvp-highlight-edit.on {
+  animation-name: kvp_highlight_edit_on;
+  animation-duration: 0.1s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+#kvp-highlight-edit.off {
+  animation-name: kvp_highlight_edit_off;
+  animation-duration: 0.1s;
+  animation-timing-function: ease-in;
+  animation-fill-mode: both;
+  animation-delay: 0.5s;
+}
+@keyframes kvp_highlight_edit_contents_on {
+  from {opacity: 0}
+    to {opacity: 1}
+}
+@keyframes kvp_highlight_edit_contents_off {
+  from {opacity: 1}
+    to {opacity: 0}
+}
+#kvp-highlight-edit.on * {
+  animation-name: kvp_highlight_edit_contents_on;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+  animation-delay: 0.1s;
+}
+#kvp-highlight-edit.off * {
+  animation-name: kvp_highlight_edit_contents_off;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in;
+  animation-fill-mode: both;
+}
+
+#kvp-highlight-edit * {
+  display: block;
+  position: absolute;
+  box-sizing: border-box;
+}
+
+#kvp-highlight-edit-note {
+  top: 7px;
+  bottom: 7px;
+  left: 15px;
+  width: 60%;
+  padding: 2px 7px;
+  background-color: rgba(0,0,0,0.4);
+  border: solid 1px #731296;
+  color: #333;
+  font-size: 0.8em;
+}
+#kvp-highlight-edit-note::placeholder {
+  font-style: italic;
+}
+#kvp-highlight-edit input[type="text"] {
+  top: 7px;
+  width: 60px;
+  background-color: rgba(0,0,0,0.4);
+  border: solid 1px #731296;
+  color: #333;
+  font-size: 1em;
+}
+#kvp-highlight-edit-start {
+  left: calc(60% + 30px + 30px + 5px);
+}
+#kvp-highlight-edit-end {
+  left: calc(60% + 30px + 30px + 5px + 60px + 15px + 30px + 5px);
+}
+#kvp-highlight-edit [for] {
+  top: 7px;
+  width: 30px;
+  color: #d5d1d6;
+  font-size: 0.9em;
+  letter-spacing: 0.05em;
+  text-align: right;
+}
+[for="kvp-highlight-edit-start"] {
+  left: calc(60% + 30px);
+}
+[for="kvp-highlight-edit-end"] {
+  left: calc(60% + 30px + 30px + 5px + 60px + 15px);
+}
+#kvp-highlight-edit-save {}
+#kvp-highlight-edit-discard {}
+#kvp-highlight-edit-cancel {}
+
+
 #kvp-timeline {
   height: 9px;
   top: 7px;
