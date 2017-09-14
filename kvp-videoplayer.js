@@ -1,7 +1,6 @@
 var kvp = new (function () { // 'kepe video player' namespace
 ////////////////////////////////////////////////////////
-
-var infoOffDelay = this.infoOffDelay = 1; // delay in secs before info box goes off after a mouseleave
+var uiOffDelay = this.uiOffDelay = 1; // delay in secs before ui box goes off after a mouseleave
 var int = this.int = 500;
 var skipBy = this.skipBy = 10; // seconds to skip forward or backward
 var velBy = this.velBy = 3; // x5 with every velocity increment
@@ -11,69 +10,58 @@ var autoOffDelay = this.autoOffDelay = 2.5;
 var vwrap = this.vwrap = document.querySelector('#kvp-vwrap');
 vwrap.tabIndex = 1;
 vwrap.focus(); // this will allow it to receive key events
-var v = this.v = document.querySelector('#kvp-thev');
+var v = this.v = vwrap.querySelector('#kvp-v');
 
 // CREATE ELEMENTS
 // outer container
-var info = this.info = document.createElement('div');
-info.id = 'kvp-info';
-// add/edit highlights dialogue
-var hledit = this.hlbox = info.appendChild(document.createElement('div'));
-hledit.id = 'kvp-highlight-edit';
-hledit.note = hledit.appendChild(document.createElement('textarea'));
-hledit.note.id = 'kvp-highlight-edit-note';
-hledit.note.placeholder = 'Leave your note here.';
-hledit.start = hledit.appendChild(document.createElement('input'));
-hledit.start.id = 'kvp-highlight-edit-start';
-hledit.start.type = 'text';
-hledit.startLabel = hledit.appendChild(document.createElement('label'));
-hledit.startLabel.setAttribute('for', 'kvp-highlight-edit-start');
-hledit.startLabel.appendChild(document.createTextNode('START'));
-hledit.end = hledit.appendChild(document.createElement('input'));
-hledit.end.id = 'kvp-highlight-edit-end';
-hledit.end.type = 'text';
-hledit.endLabel = hledit.appendChild(document.createElement('label'));
-hledit.endLabel.setAttribute('for', 'kvp-highlight-edit-end');
-hledit.endLabel.appendChild(document.createTextNode('END'));
-hledit.save = hledit.appendChild(document.createElement('div'));
-hledit.save.id = 'kvp-highlight-edit-save';
-hledit.discard = hledit.appendChild(document.createElement('div'));
-hledit.discard.id = 'kvp-highlight-edit-discard';
-hledit.cancel = hledit.appendChild(document.createElement('div'));
-hledit.cancel.id = 'kvp-highlight-edit-cancel';
-// outer timeline
-var tl = this.tl = info.appendChild(document.createElement('div'));
-tl.id = 'kvp-timeline';
-// container for transient, automatic range types (buffered, played, etc) in timeline
-// container is necessary for one-shot per frame reflow when creating and removing ranges
-var ranges = this.ranges = tl.appendChild(document.createElement('div'));
-ranges.id = 'kvp-ranges';
-// playhead
-var ph = this.ph = tl.appendChild(document.createElement('div'));
-ph.id = 'kvp-playhead';
+var ui = this.ui = document.createElement('div');
+ui.id = 'kvp-ui';
+ui.innerHTML = '\
+<div id="kvp-timeline">\
+  <div id="kvp-ranges"></div>\
+  <div id="kvp-playhead"></div>\
+</div>\
+<div id="kvp-video-title"></div>\
+<div id="kvp-add-highlight-button"></div>\
+<div id="kvp-time-info">\
+  <div id="kvp-current-time"></div>\
+  <div id="kvp-duration"></div>\
+</div>\
+<div id="kvp-highlight-edit">\
+  <div>\
+    <textarea id="kvp-highlight-edit-note" placeholder="Leave your note here."></textarea>\
+  </div>\
+  <div>\
+    <input id="kvp-highlight-edit-start" type="text">\
+    <label for="kvp-highlight-edit-start">START</label>\
+    <input id="kvp-highlight-edit-end" type="text">\
+    <label for="kvp-highlight-edit-end">END</label>\
+  </div>\
+  <div>\
+    <div id="kvp-highlight-edit-save">SAVE</div>\
+    <div id="kvp-highlight-edit-discard">DISCARD</div>\
+    <div id="kvp-highlight-edit-cancel">CANCEL</div>\
+  </div>\
+<div>\
+'.replace(/>[^<>]+</g, '><');
+
+vwrap.appendChild(ui);
+var tl = this.tl = ui.querySelector('#kvp-timeline');
+var ranges = this.ranges = ui.querySelector('#kvp-ranges');
+var ph = this.ph = ui.querySelector('#kvp-playhead');
 ph.w = ph.getBoundingClientRect().width;
-// video title
-var vt = this.vt = info.appendChild(document.createElement('div'));
-vt.id = 'kvp-video-title';
-vt.innerText = v.getAttribute('data-title');
-// add highlight button
-var addHLBtn = info.appendChild(document.createElement('div'));
-addHLBtn.id = 'add-highlight-button';
-// time info
-var ti = this.ti = info.appendChild(document.createElement('div'));
-ti.id = 'kvp-time-info';
-// textual display for current time
-var cur = this.cur = ti.appendChild(document.createElement('div'));
-cur.id = 'kvp-current-time';
-// textual display for duration
-var dur = this.dur = ti.appendChild(document.createElement('div'));
-dur.id = 'kvp-duration';
+var vt = this.vt = ui.querySelector('#kvp-video-title');
+var ti = this.ti = ui.querySelector('#kvp-time-info');
+var cur = this.cur = ui.querySelector('#kvp-current-time');
+var dur = this.dur = ui.querySelector('#kvp-duration');
+var hledit = this.hledit = ui.querySelector('#kvp-highlight-edit');
+hledit.note = hledit.querySelector('#kvp-highlight-edit-note');
+hledit.start = hledit.querySelector('#kvp-highlight-edit-start');
+hledit.end = hledit.querySelector('#kvp-highlight-edit-end');
+hledit.save = hledit.querySelector('#kvp-highlight-edit-save');
+hledit.discard = hledit.querySelector('#kvp-highlight-edit-discard');
+hledit.cancel = hledit.querySelector('#kvp-highlight-edit-cancel');
 
-// finally:
-vwrap.appendChild(info);
-
-
-// RETRIEVE AND DISPLAY TIMES
 
 // some utility functions
 function zeroFill(num, fillTo) {
@@ -105,7 +93,7 @@ var seek = this.seek = {
 };
 
 
-// frequency info for each main loop section
+// frequency variables for each main loop section
 var freq = {
   ranges: {every: 250, last: 0},
   playhead: {every: 250, last: 0},
@@ -168,14 +156,20 @@ window.requestAnimationFrame(mainAnimLoop.bind(this));
 
 
 /*
-Do not use timeupdate event since it's dispatched too fast and with inconsistent timing,
-which is dependent on system load and other factors.
-Instead update timeline and related elements through much slower interval above.
+Leaving this bit in just for future reference:
+The functionality of these two events seems better handled
+by just polling regularly through the main loop.
+'timeupdate' is dispatched too frequently and inconsistently.
+'durationchange' seems problematic in that it sometimes
+doesn't dispatch at all (or maybe too soon),
+especially when running locally. I could put this code in a
+'DOMContentLoaded' or window 'load' event, but, again,
+the main loop works fine, it's running anyway, and
+it's synced to the refresh rate.
 
 v.addEventListener('timeupdate', function (e) {});
+v.addEventListener('durationchange', function (e) {});
 */
-
-//v.addEventListener('durationchange', function (e) {});
 
 
 vwrap.addEventListener('keydown', function (e) {
@@ -296,14 +290,14 @@ ph.addEventListener('dblclick', timelineInput);
 
 // control panel/timeline visibility
 vwrap.addEventListener('mouseenter', function (e) {
-  clearTimeout(info.timeout);
-  info.className = 'on';
+  clearTimeout(ui.timeout);
+  ui.className = 'on';
 });
 vwrap.addEventListener('mouseleave', function (e) {
 
-  info.timeout = setTimeout(function () {
-    info.className = 'off';
-  }, infoOffDelay * 1000);
+  ui.timeout = setTimeout(function () {
+    ui.className = 'off';
+  }, uiOffDelay * 1000);
 });
 
 

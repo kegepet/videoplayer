@@ -18,11 +18,11 @@
 #kvp-vwrap * {
   position: absolute;
 }
-#kvp-thev {
+#kvp-v {
   width: 855px;
   height: 480px;
 }
-#kvp-info {
+#kvp-ui {
   height: 50px; /* keyframe should match */
   bottom: -50px; /* this will change to 0 when turned on */
   left: 0;
@@ -30,22 +30,22 @@
   background-color: rgba(0,0,0,0.65);
   font-size: 0.8em;
 }
-@keyframes kvp_info_on {
+@keyframes kvp_ui_on {
   from {bottom: -50px}
     to   {bottom: 0}
 }
-@keyframes kvp_info_off {
+@keyframes kvp_ui_off {
   from {bottom: 0}
     to   {bottom: -50px}
 }
-#kvp-info.on {
-  animation-name: kvp_info_on;
+#kvp-ui.on {
+  animation-name: kvp_ui_on;
   animation-duration: 0.2s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
 }
-#kvp-info.off {
-  animation-name: kvp_info_off;
+#kvp-ui.off {
+  animation-name: kvp_ui_off;
   animation-duration: 0.2s;
   animation-timing-function: ease-in;
   animation-fill-mode: both;
@@ -100,17 +100,28 @@
   animation-fill-mode: both;
 }
 
+#kvp-highlight-edit {
+  display: table;
+  table-layout: fixed;
+}
+
 #kvp-highlight-edit * {
-  display: block;
-  position: absolute;
+  position: relative;
   box-sizing: border-box;
 }
 
+#kvp-highlight-edit > * {
+  display: table-cell;
+  border: solid 1px red;
+}
+
+#kvp-highlight-edit::first-child {
+  min-width: 200px;
+  max-width: 400px;
+}
+
 #kvp-highlight-edit-note {
-  top: 7px;
-  bottom: 7px;
-  left: 15px;
-  width: 60%;
+  width: 100%;
   padding: 2px 7px;
   background-color: rgba(0,0,0,0.4);
   border: solid 1px #731296;
@@ -121,7 +132,6 @@
   font-style: italic;
 }
 #kvp-highlight-edit input[type="text"] {
-  top: 7px;
   width: 60px;
   background-color: rgba(0,0,0,0.4);
   border: solid 1px #731296;
@@ -129,13 +139,12 @@
   font-size: 1em;
 }
 #kvp-highlight-edit-start {
-  left: calc(60% + 30px + 30px + 5px);
+
 }
 #kvp-highlight-edit-end {
-  left: calc(60% + 30px + 30px + 5px + 60px + 15px + 30px + 5px);
+
 }
 #kvp-highlight-edit [for] {
-  top: 7px;
   width: 30px;
   color: #d5d1d6;
   font-size: 0.9em;
@@ -143,15 +152,30 @@
   text-align: right;
 }
 [for="kvp-highlight-edit-start"] {
-  left: calc(60% + 30px);
+
 }
 [for="kvp-highlight-edit-end"] {
-  left: calc(60% + 30px + 30px + 5px + 60px + 15px);
-}
-#kvp-highlight-edit-save {}
-#kvp-highlight-edit-discard {}
-#kvp-highlight-edit-cancel {}
 
+}
+
+#kvp-highlight-edit-save,
+#kvp-highlight-edit-discard,
+#kvp-highlight-edit-cancel {
+  width: 50px;
+  height: 20px;
+  background-color: #ccc;
+  overflow: hidden;
+}
+
+#kvp-highlight-edit-save {
+
+}
+#kvp-highlight-edit-discard {
+
+}
+#kvp-highlight-edit-cancel {
+
+}
 
 #kvp-timeline {
   height: 9px;
@@ -209,6 +233,6 @@
   margin: 0;
   padding: 0;
 }
-#kvp-time-info div:first-child::after {
+#kvp-duration::before {
   content: " / ";
 }
