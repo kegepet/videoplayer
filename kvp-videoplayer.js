@@ -1,7 +1,6 @@
 var kvp = new (function () { // 'kepe video player' namespace
 ////////////////////////////////////////////////////////
 var uiOffDelay = this.uiOffDelay = 1; // delay in secs before ui box goes off after a mouseleave
-var int = this.int = 500;
 var skipBy = this.skipBy = 10; // seconds to skip forward or backward
 var velBy = this.velBy = 3; // x5 with every velocity increment
 var autoOnDelay = this.autoOnDelay = 1; // in seconds
@@ -42,7 +41,7 @@ ui.innerHTML = '\
     <div id="kvp-highlight-edit-discard">DISCARD</div>\
     <div id="kvp-highlight-edit-cancel">CANCEL</div>\
   </div>\
-<div>\
+</div>\
 '.replace(/>[^<>]+</g, '><');
 
 vwrap.appendChild(ui);
@@ -80,11 +79,9 @@ function formatTime(secs) {
 
   return zeroFill(h, 2) + ':' + zeroFill(m, 2) + ':' + zeroFill(s, 2);
 }
-//  initialize some values
-//cur.innerText = formatTime(0);
 
 
-// seek object schema
+// seek object
 var seek = this.seek = {
   init: 0, // timestamp of when action was initialized
   paused: v.paused,
@@ -202,8 +199,10 @@ vwrap.addEventListener('keydown', function (e) {
       // increment/decrement velocity
       // (dir * seek.vel) < 0 because negative * positive will always be negative
       // and vice versa, so if the product is negative, the vector has changed
-      seek.vel *= (((dir * seek.vel) > 0) ? velBy : (1 / velBy));
       // (1 / velBy) inverts the number and shifts the velocity
+      // the || -seek.vel prevents it from ever getting to a fraction or 0, and instead flips it
+      // so the next step backward from 1 is -1 and vice versa
+      seek.vel = parseInt(seek.vel * ((dir * seek.vel) > 0) ? velBy : (1 / velBy)) || -seek.vel;
     }
 
   }
