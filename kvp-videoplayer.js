@@ -1,4 +1,4 @@
-var kvp = new (function () { // 'kepe video player' namespace
+function kvp_videoplayer() { // 'kepe video player' namespace
 ////////////////////////////////////////////////////////
 var uiOffDelay = this.uiOffDelay = 1; // delay in secs before ui box goes off after a mouseleave
 var skipBy = this.skipBy = 10; // seconds to skip forward or backward
@@ -62,7 +62,8 @@ hledit.discard = hledit.querySelector('#kvp-highlight-edit-discard');
 hledit.cancel = hledit.querySelector('#kvp-highlight-edit-cancel');
 
 
-// some utility functions
+// reuseable utility internals
+
 function zeroFill(num, fillTo) {
   num = String(num);
   while(fillTo - num.length) {
@@ -80,8 +81,76 @@ function formatTime(secs) {
   return zeroFill(h, 2) + ':' + zeroFill(m, 2) + ':' + zeroFill(s, 2);
 }
 
+// main animation loop
+// call anim.addToFrame(callback, every) as needed
+var anim = new (function () {
 
-// seek object
+  var toAnimate = [];
+  this.addToFrame = function (callback, every) {
+    toAnimate.push({every: every, last: 0, callback: callback});
+  }
+  window.requestAnimationFrame(function (timestamp) {
+
+    toAnimate.forEach(function (item, i) {
+
+      if (!item.every) {
+        item.callback();
+        toAnimate.splice(i, 1);
+        return;
+      }
+
+      if ((timestamp - item.last) >= item.every) {
+        item.last = timestamp;
+        item.callback();
+      }
+    });
+    window.requestAnimationFrame(arguments.callee);
+  });
+})();
+
+
+
+// playhead - it's alive!
+anim.addToFrame(function () {
+
+  if ((dur.time != v.duration) || !dur.time) {
+    dur.innerText = formatTime(Math.floor(dur.time = v.duration));
+  }
+  if ((cur.time != v.currentTime) || !cur.time) {
+    cur.innerText = formatTime(Math.floor(cur.time = v.currentTime));
+    if (ph.dragging) return;
+    tl.rect = tl.getBoundingClientRect();
+    ph.style.left = tl.rect.width * (v.currentTime / v.duration) - (ph.w / 2) + 'px';
+  }
+}, 250);
+
+
+// ranges - it's alive!
+anim.addToFrame(function () {
+
+  tl.rect = tl.getBoundingClientRect();
+  var c = ranges;
+  ranges = this.ranges = document.createElement('div');
+  ranges.id = 'kvp-ranges';
+
+  ['buffered', 'played'].forEach(function (rangeType) {
+
+    for (var i = 0; i < v[rangeType].length; i++) {
+
+      var r = document.createElement('div');
+      r.className = 'kvp-' + rangeType;
+      var s = v[rangeType].start(i) / v.duration;
+      var e = v[rangeType].end(i) / v.duration;
+      r.style.left = tl.rect.width * s + 'px';
+      r.style.width = tl.rect.width * (e - s) + 'px';
+      ranges.appendChild(r);
+    }
+  });
+  tl.replaceChild(ranges, c);
+}.bind(this), 250);
+
+
+// autoseek object
 var seek = this.seek = {
   init: 0, // timestamp of when action was initialized
   paused: v.paused,
@@ -89,67 +158,13 @@ var seek = this.seek = {
   auto: false
 };
 
+// autoseek - it's alive!
+anim.addToFrame(function () {
 
-// frequency variables for each main loop section
-var freq = {
-  ranges: {every: 250, last: 0},
-  playhead: {every: 250, last: 0},
-  autoseek: {every: 500, last: 0}
-};
-// main animation loop for updating timeline and whatever else
-function mainAnimLoop(timestamp) {
-
-  // create and update range
-  if ((timestamp - freq.ranges.last) >= freq.ranges.every) {
-    freq.ranges.last = timestamp;
-
-    tl.rect = tl.getBoundingClientRect();
-    var c = ranges;
-    ranges = this.ranges = document.createElement('div');
-    ranges.id = 'kvp-ranges';
-
-    ['buffered', 'played'].forEach(function (rangeType) {
-
-      for (var i = 0; i < v[rangeType].length; i++) {
-
-        var r = document.createElement('div');
-        r.className = 'kvp-' + rangeType;
-        var s = v[rangeType].start(i) / v.duration;
-        var e = v[rangeType].end(i) / v.duration;
-        r.style.left = tl.rect.width * s + 'px';
-        r.style.width = tl.rect.width * (e - s) + 'px';
-        ranges.appendChild(r);
-      }
-    });
-    tl.replaceChild(ranges, c);
+  if (seek.auto) {
+    v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
   }
-
-  // play progress
-  if ((timestamp - freq.playhead.last) >= freq.playhead.every) {
-    freq.playhead.last = timestamp;
-
-    if (!dur.time || (dur.time != v.duration)) {
-      dur.innerText = formatTime(Math.floor(dur.time = v.duration));
-    }
-    if (!cur.time || (cur.time != v.currentTime)) {
-      cur.innerText = formatTime(Math.floor(cur.time = v.currentTime));
-      if (ph.dragging) return;
-      tl.rect = tl.getBoundingClientRect();
-      ph.style.left = tl.rect.width * (v.currentTime / v.duration) - (ph.w / 2) + 'px';
-    }
-  }
-
-  // handle seek
-  if ((timestamp - freq.autoseek.last) >= freq.autoseek.every) {
-    freq.autoseek.last = timestamp;
-
-    if (seek.auto) {
-      v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
-    }
-  }
-  window.requestAnimationFrame(mainAnimLoop.bind(this));
-}
-window.requestAnimationFrame(mainAnimLoop.bind(this));
+}, 250);
 
 
 /*
@@ -167,7 +182,6 @@ it's synced to the refresh rate.
 v.addEventListener('timeupdate', function (e) {});
 v.addEventListener('durationchange', function (e) {});
 */
-
 
 vwrap.addEventListener('keydown', function (e) {
 
@@ -248,24 +262,24 @@ vwrap.addEventListener('keyup', function (e) {
 
 function timelineInput(e) {
 
-  if (e.type == 'mousedown') {
-    // we need to reset this value in case anything has changed
-    // and before we initiate any actions
-    tl.rect = tl.getBoundingClientRect();
-  }
-  if ((e.target == ph) && (e.type == 'mousedown')) {
+  if (tl.contains(e.target) && (e.type == 'mousedown')) {
     ph.dragging = true;
-    ph.cursorX = e.offsetX;
+    tl.rect = tl.getBoundingClientRect();
+    if (e.target == ph) {
+      ph.cursorX = e.offsetX;
+    }
+    else {
+      ph.cursorX = ph.w / 2;
+      ph.style.left = e.clientX - tl.rect.left - ph.cursorX + "px";
+      v.currentTime = v.duration * ((e.clientX - tl.rect.left) / tl.rect.width);
+    }
   }
   else if (ph.dragging && (e.type == 'mouseup')) {
     ph.dragging = false;
     v.currentTime = v.duration * ((ph.offsetLeft + (ph.w / 2)) / tl.rect.width);
   }
-  else if (ph.dragging && e.type == 'mousemove') {
+  else if (ph.dragging && (e.type == 'mousemove')) {
     ph.style.left = Math.max(-ph.w / 2, Math.min(tl.rect.width - (ph.w / 2), e.clientX - tl.rect.left - ph.cursorX)) + 'px';
-  }
-  else if (e.type == 'click') {
-    v.currentTime = v.duration * ((e.clientX - tl.rect.left) / tl.rect.width);
   }
 }
 
@@ -275,7 +289,7 @@ window.addEventListener('mouseup', timelineInput);
 window.addEventListener('mousemove', function (e) {
   if (!ph.dragging) return;
   // throttle mousemove events to refresh rate
-  ph.moved = ('moved' in ph) ? ph.moved : true;
+  if (!('moved' in ph)) ph.moved = true;
   if (!ph.moved) return;
   ph.moved = false;
   window.requestAnimationFrame(function () {
@@ -283,8 +297,6 @@ window.addEventListener('mousemove', function (e) {
     ph.moved = true;
   });
 });
-tl.addEventListener('click', timelineInput);
-ph.addEventListener('dblclick', timelineInput);
 
 
 // control panel/timeline visibility
@@ -300,5 +312,9 @@ vwrap.addEventListener('mouseleave', function (e) {
 });
 
 
-//////////////////////////////////////////////
-})();// end kvp namespace/object and start'r up
+// END KVP VIDEO PLAYER CLASS /////////////////
+}
+
+window.document.addEventListener('DOMContentLoaded', function (e) {
+  this.kvp = new kvp_videoplayer();
+}.bind(this));

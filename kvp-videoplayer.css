@@ -1,20 +1,4 @@
-/*@import url('https://fonts.googleapis.com/css?family=Assistant:200|Source+Sans+Pro:200');
-*/
-#kvp-vwrap {
-  width: 855px;
-  height: 480px;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  margin: auto;
-  overflow: hidden;
-  font-family: 'Assistant', sans-serif;
-  /*font-family: 'Source Sans Pro', sans-serif;*/
-  font-weight: 200;
-  color: #d6d4c9;
-}
+
 #kvp-vwrap * {
   position: absolute;
 }
@@ -102,7 +86,7 @@
 
 #kvp-highlight-edit {
   display: table;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 #kvp-highlight-edit * {
@@ -116,6 +100,7 @@
 }
 
 #kvp-highlight-edit::first-child {
+  width: 500px;
   min-width: 200px;
   max-width: 400px;
 }
@@ -182,7 +167,7 @@
   top: 7px;
   left: 5px;
   right: 5px;
-  background-color: #731296;
+  background-color: #6f1bc4;
   overflow: visible;
 }
 
@@ -198,7 +183,7 @@
 .kvp-played {
   height: 2px;
   bottom: -1px;
-  background-color: #dfb8ed; /* nice if it matches the playhead */
+  background-color: #af9cc1; /* nice if it matches the playhead */
 }
 
 /* user-defined ranges */
@@ -213,7 +198,7 @@
   height: 11px;
   left: -3px; /* half the width */
   top: -1px;
-  background-color: #dfb8ed;
+  background-color: #af9cc1;
 }
 #kvp-video-title, #kvp-time-info {
   top: 25px;
