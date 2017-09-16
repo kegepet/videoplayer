@@ -1,12 +1,13 @@
 
-#kvp-vwrap * {
+.kvp-vwrap * {
   position: absolute;
+  box-sizing: border-box;
 }
-#kvp-v {
+.kvp-vwrap video {
   width: 855px;
   height: 480px;
 }
-#kvp-ui {
+.kvp-ui {
   height: 50px; /* keyframe should match */
   bottom: -50px; /* this will change to 0 when turned on */
   left: 0;
@@ -22,19 +23,19 @@
   from {bottom: 0}
     to   {bottom: -50px}
 }
-#kvp-ui.on {
+.kvp-ui.on {
   animation-name: kvp_ui_on;
   animation-duration: 0.2s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
 }
-#kvp-ui.off {
+.kvp-ui.off {
   animation-name: kvp_ui_off;
   animation-duration: 0.2s;
   animation-timing-function: ease-in;
   animation-fill-mode: both;
 }
-#kvp-highlight-edit {
+.kvp-highlight-edit {
   height: 70px;
   top: -70px;
   width: 100%;
@@ -49,13 +50,13 @@
   from {top: -70px; height: 70px}
     to {top: 0; height: 0}
 }
-#kvp-highlight-edit.on {
+.kvp-highlight-edit.on {
   animation-name: kvp_highlight_edit_on;
   animation-duration: 0.1s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
 }
-#kvp-highlight-edit.off {
+.kvp-highlight-edit.off {
   animation-name: kvp_highlight_edit_off;
   animation-duration: 0.1s;
   animation-timing-function: ease-in;
@@ -70,154 +71,151 @@
   from {opacity: 1}
     to {opacity: 0}
 }
-#kvp-highlight-edit.on * {
+.kvp-highlight-edit.on * {
   animation-name: kvp_highlight_edit_contents_on;
   animation-duration: 0.5s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
   animation-delay: 0.1s;
 }
-#kvp-highlight-edit.off * {
+.kvp-highlight-edit.off * {
   animation-name: kvp_highlight_edit_contents_off;
   animation-duration: 0.5s;
   animation-timing-function: ease-in;
   animation-fill-mode: both;
 }
 
-#kvp-highlight-edit {
-  display: table;
-  table-layout: auto;
-}
 
-#kvp-highlight-edit * {
+.kvp-highlight-edit * {
   position: relative;
-  box-sizing: border-box;
 }
 
-#kvp-highlight-edit > * {
-  display: table-cell;
-  border: solid 1px red;
+.kvp-highlight-edit > * {
+  display: inline-block;
+  vertical-align: top;
+  height: 100%;
+  padding: 3px 5px;
 }
 
-#kvp-highlight-edit::first-child {
-  width: 500px;
+.kvp-highlight-edit > *:nth-child(1) {
+  width: 60%;
+  text-align: right;
+}
+
+.kvp-highlight-edit > *:nth-child(2) {
+  width: 20%;
+  text-align: center;
+}
+
+.kvp-highlight-edit > *:nth-child(3) {
+  width: 20%;
+}
+
+.kvp-highlight-edit *::placeholder {
+  font-style: italic;
+}
+
+.kvp-highlight-edit-note {
+  width: 100%;
   min-width: 200px;
   max-width: 400px;
-}
-
-#kvp-highlight-edit-note {
-  width: 100%;
+  height: 100%;
   padding: 2px 7px;
   background-color: rgba(0,0,0,0.4);
-  border: solid 1px #731296;
+  border: solid 1px rgb(122, 122, 122);
   color: #333;
   font-size: 0.8em;
 }
-#kvp-highlight-edit-note::placeholder {
-  font-style: italic;
-}
-#kvp-highlight-edit input[type="text"] {
-  width: 60px;
+
+.kvp-highlight-edit input[type="text"] {
+  width: 120px;
+  padding: 3px 4px;
   background-color: rgba(0,0,0,0.4);
-  border: solid 1px #731296;
+  border: solid 1px rgb(122, 122, 122);
   color: #333;
   font-size: 1em;
 }
-#kvp-highlight-edit-start {
+.kvp-highlight-edit-start {
+  margin-bottom: 10px;
+}
+.kvp-highlight-edit-end {
 
 }
-#kvp-highlight-edit-end {
 
-}
-#kvp-highlight-edit [for] {
-  width: 30px;
-  color: #d5d1d6;
+
+.kvp-highlight-edit-save,
+.kvp-highlight-edit-discard,
+.kvp-highlight-edit-cancel {
+  width: 80px;
+  margin-bottom: 2px;
+  padding: 2px 4px;
+  background-color: rgb(109, 109, 109);
+  color: rgb(183, 183, 183);
+  text-align: center;
   font-size: 0.9em;
-  letter-spacing: 0.05em;
-  text-align: right;
-}
-[for="kvp-highlight-edit-start"] {
-
-}
-[for="kvp-highlight-edit-end"] {
-
+  cursor: default;
+  user-select: none;
 }
 
-#kvp-highlight-edit-save,
-#kvp-highlight-edit-discard,
-#kvp-highlight-edit-cancel {
-  width: 50px;
-  height: 20px;
-  background-color: #ccc;
-  overflow: hidden;
-}
 
-#kvp-highlight-edit-save {
-
-}
-#kvp-highlight-edit-discard {
-
-}
-#kvp-highlight-edit-cancel {
-
-}
-
-#kvp-timeline {
+.kvp-timeline {
   height: 9px;
   top: 7px;
   left: 5px;
   right: 5px;
-  background-color: #6f1bc4;
+  background-color: rgb(111, 27, 196);
   overflow: visible;
 }
 
 /* transient, automatic ranges */
-#kvp-ranges {
+.kvp-ranges {
   width: 100%;
   height: 100%;
 }
 .kvp-buffered {
   height: 100%;
-  background-color: #a540c9;
+  background-color: rgb(128, 63, 193);
 }
 .kvp-played {
   height: 2px;
   bottom: -1px;
-  background-color: #af9cc1; /* nice if it matches the playhead */
+  background-color: rgb(174, 156, 191); /* nice if it matches the playhead */
 }
 
 /* user-defined ranges */
 .kvp-highlights {
   height: 3px;
   top: -2px;
-  color: #ff7700;
+  color: rgb(255, 196, 71);
 }
 
-#kvp-playhead {
+.kvp-playhead {
   width: 6px;
   height: 11px;
   left: -3px; /* half the width */
   top: -1px;
-  background-color: #af9cc1;
+  background-color: rgb(174, 156, 191);
 }
-#kvp-video-title, #kvp-time-info {
+.kvp-video-title, .kvp-time-info {
   top: 25px;
 }
-#kvp-video-title {
+.kvp-video-title {
   width: 200px;
   left: 10px;
   font-size: 1.2em;
 }
-#kvp-time-info {
+.kvp-time-info {
   right: 10px;
   white-space: nowrap;
+  cursor: default;
+  user-select: none;
 }
-#kvp-time-info div {
+.kvp-time-info div {
   position: relative;
   display: inline;
   margin: 0;
   padding: 0;
 }
-#kvp-duration::before {
+.kvp-duration::before {
   content: " / ";
 }

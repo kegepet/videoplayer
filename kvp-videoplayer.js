@@ -1,4 +1,4 @@
-function kvp_videoplayer() { // 'kepe video player' namespace
+function kvp_videoplayer(vwrap) { // 'kepe video player' namespace
 ////////////////////////////////////////////////////////
 var uiOffDelay = this.uiOffDelay = 1; // delay in secs before ui box goes off after a mouseleave
 var skipBy = this.skipBy = 10; // seconds to skip forward or backward
@@ -6,60 +6,59 @@ var velBy = this.velBy = 3; // x5 with every velocity increment
 var autoOnDelay = this.autoOnDelay = 1; // in seconds
 var autoOffDelay = this.autoOffDelay = 2.5;
 
-var vwrap = this.vwrap = document.querySelector('#kvp-vwrap');
+this.vwrap = vwrap;
 vwrap.tabIndex = 1;
 vwrap.focus(); // this will allow it to receive key events
-var v = this.v = vwrap.querySelector('#kvp-v');
+var v = this.v = vwrap.querySelector('video');
 
 // CREATE ELEMENTS
 // outer container
 var ui = this.ui = document.createElement('div');
-ui.id = 'kvp-ui';
+ui.className = 'kvp-ui';
 ui.innerHTML = '\
-<div id="kvp-timeline">\
-  <div id="kvp-ranges"></div>\
-  <div id="kvp-playhead"></div>\
+<div class="kvp-timeline">\
+  <div class="kvp-ranges"></div>\
+  <div class="kvp-playhead"></div>\
 </div>\
-<div id="kvp-video-title"></div>\
-<div id="kvp-add-highlight-button"></div>\
-<div id="kvp-time-info">\
-  <div id="kvp-current-time"></div>\
-  <div id="kvp-duration"></div>\
+<div class="kvp-video-title"></div>\
+<div class="kvp-add-highlight-button"></div>\
+<div class="kvp-time-info">\
+  <div class="kvp-current-time"></div>\
+  <div class="kvp-duration"></div>\
 </div>\
-<div id="kvp-highlight-edit">\
+<div class="kvp-highlight-edit">\
   <div>\
-    <textarea id="kvp-highlight-edit-note" placeholder="Leave your note here."></textarea>\
+    <textarea class="kvp-highlight-edit-note" placeholder="Leave your note here."></textarea>\
   </div>\
   <div>\
-    <input id="kvp-highlight-edit-start" type="text">\
-    <label for="kvp-highlight-edit-start">START</label>\
-    <input id="kvp-highlight-edit-end" type="text">\
-    <label for="kvp-highlight-edit-end">END</label>\
+    <input class="kvp-highlight-edit-start" type="text" placeholder="start time">\
+    <input class="kvp-highlight-edit-end" type="text" placeholder="end time">\
   </div>\
   <div>\
-    <div id="kvp-highlight-edit-save">SAVE</div>\
-    <div id="kvp-highlight-edit-discard">DISCARD</div>\
-    <div id="kvp-highlight-edit-cancel">CANCEL</div>\
+    <div class="kvp-highlight-edit-save">SAVE</div>\
+    <div class="kvp-highlight-edit-discard">DISCARD</div>\
+    <div class="kvp-highlight-edit-cancel">CANCEL</div>\
   </div>\
 </div>\
-'.replace(/>[^<>]+</g, '><');
+'.replace(/>[\s\t\n]*([^<>\s\t\n]+(?:\s+[^<>\s\t\n]+)*)?[\s\t\n]*</g, '>$1<');
+
 
 vwrap.appendChild(ui);
-var tl = this.tl = ui.querySelector('#kvp-timeline');
-var ranges = this.ranges = ui.querySelector('#kvp-ranges');
-var ph = this.ph = ui.querySelector('#kvp-playhead');
+var tl = this.tl = ui.querySelector('.kvp-timeline');
+var ranges = this.ranges = ui.querySelector('.kvp-ranges');
+var ph = this.ph = ui.querySelector('.kvp-playhead');
 ph.w = ph.getBoundingClientRect().width;
-var vt = this.vt = ui.querySelector('#kvp-video-title');
-var ti = this.ti = ui.querySelector('#kvp-time-info');
-var cur = this.cur = ui.querySelector('#kvp-current-time');
-var dur = this.dur = ui.querySelector('#kvp-duration');
-var hledit = this.hledit = ui.querySelector('#kvp-highlight-edit');
-hledit.note = hledit.querySelector('#kvp-highlight-edit-note');
-hledit.start = hledit.querySelector('#kvp-highlight-edit-start');
-hledit.end = hledit.querySelector('#kvp-highlight-edit-end');
-hledit.save = hledit.querySelector('#kvp-highlight-edit-save');
-hledit.discard = hledit.querySelector('#kvp-highlight-edit-discard');
-hledit.cancel = hledit.querySelector('#kvp-highlight-edit-cancel');
+var vt = this.vt = ui.querySelector('.kvp-video-title');
+var ti = this.ti = ui.querySelector('.kvp-time-info');
+var cur = this.cur = ui.querySelector('.kvp-current-time');
+var dur = this.dur = ui.querySelector('.kvp-duration');
+var hledit = this.hledit = ui.querySelector('.kvp-highlight-edit');
+hledit.note = hledit.querySelector('.kvp-highlight-edit-note');
+hledit.start = hledit.querySelector('.kvp-highlight-edit-start');
+hledit.end = hledit.querySelector('.kvp-highlight-edit-end');
+hledit.save = hledit.querySelector('.kvp-highlight-edit-save');
+hledit.discard = hledit.querySelector('.kvp-highlight-edit-discard');
+hledit.cancel = hledit.querySelector('.kvp-highlight-edit-cancel');
 
 
 // reuseable utility internals
@@ -131,7 +130,7 @@ anim.addToFrame(function () {
   tl.rect = tl.getBoundingClientRect();
   var c = ranges;
   ranges = this.ranges = document.createElement('div');
-  ranges.id = 'kvp-ranges';
+  ranges.className = 'kvp-ranges';
 
   ['buffered', 'played'].forEach(function (rangeType) {
 
@@ -302,12 +301,12 @@ window.addEventListener('mousemove', function (e) {
 // control panel/timeline visibility
 vwrap.addEventListener('mouseenter', function (e) {
   clearTimeout(ui.timeout);
-  ui.className = 'on';
+  ui.className = ui.className.replace(/\soff|\son|$/, ' on');
 });
 vwrap.addEventListener('mouseleave', function (e) {
 
   ui.timeout = setTimeout(function () {
-    ui.className = 'off';
+    ui.className = ui.className.replace(/\son|\soff|$/, ' off');
   }, uiOffDelay * 1000);
 });
 
@@ -315,6 +314,8 @@ vwrap.addEventListener('mouseleave', function (e) {
 // END KVP VIDEO PLAYER CLASS /////////////////
 }
 
-window.document.addEventListener('DOMContentLoaded', function (e) {
-  this.kvp = new kvp_videoplayer();
+window.addEventListener('load', function (e) {
+  //setTimeout(function () {
+    this.kvp = new kvp_videoplayer(document.querySelector('.kvp-vwrap'));
+  //}, 100);
 }.bind(this));
