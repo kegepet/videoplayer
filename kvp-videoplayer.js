@@ -2,7 +2,7 @@ function kvp_videoplayer(vwrap) { // 'kepe video player' namespace
 ////////////////////////////////////////////////////////
 var uiOffDelay = this.uiOffDelay = 1; // delay in secs before ui box goes off after a mouseleave
 var skipBy = this.skipBy = 10; // seconds to skip forward or backward
-var velBy = this.velBy = 3; // x5 with every velocity increment
+var velBy = this.velBy = 3; // factor to multiple seek velocity by at each increment
 var autoOnDelay = this.autoOnDelay = 1; // in seconds
 var autoOffDelay = this.autoOffDelay = 2.5;
 
@@ -150,18 +150,17 @@ anim.addToFrame(function () {
 
 
 // autoseek object
-var seek = this.seek = {
+var autoseek = this.autoseek = {
   init: 0, // timestamp of when action was initialized
   paused: v.paused,
-  vel: 0, // basically 'play'
-  auto: false
+  vel: 0
 };
 
 // autoseek - it's alive!
 anim.addToFrame(function () {
 
-  if (seek.auto) {
-    v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + seek.vel));
+  if (autoseek.vel) {
+    v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + autoseek.vel));
   }
 }, 250);
 
@@ -189,33 +188,31 @@ vwrap.addEventListener('keydown', function (e) {
 
   if (/left|right/i.test(e.key)) {
 
-    var dir = /left/i.test(e.key) ? -1 : 1;
+    // we have to store the dir for use in the keyup event
+    autoseek.dir = /left/i.test(e.key) ? -1 : 1;
 
     // initialize new seek
-    if (!seek.vel) {
-      seek.init = Date.now();
-      seek.paused = v.paused;
-      seek.vel = dir;
-      seek.auto = false;
+    if (!autoseek.vel && !autoseek.init) {
+      autoseek.init = Date.now();
+      autoseek.paused = v.paused;
     }
 
     // turn on auto seek
-    else if (!seek.auto && seek.init) {
-      // time in seconds between now and init time
-      seek.auto = (Date.now() - seek.init) >= (autoOnDelay * 1000);
-      if (seek.auto && !v.paused) v.pause();
+    if (!autoseek.vel && autoseek.init &&
+       (Date.now() - autoseek.init) >= (autoOnDelay * 1000)) {
+      autoseek.vel = autoseek.dir;
+      if (!v.paused) v.pause();
     }
 
     // shift seek velocity
-    else if (seek.auto && !seek.init) {
-      seek.init = Date.now(); // begin new timer
-      // increment/decrement velocity
-      // (dir * seek.vel) < 0 because negative * positive will always be negative
-      // and vice versa, so if the product is negative, the vector has changed
-      // (1 / velBy) inverts the number and shifts the velocity
-      // the || -seek.vel prevents it from ever getting to a fraction or 0, and instead flips it
-      // so the next step backward from 1 is -1 and vice versa
-      seek.vel = parseInt(seek.vel * ((dir * seek.vel) > 0) ? velBy : (1 / velBy)) || -seek.vel;
+    else if (autoseek.vel && !autoseek.init) {
+      autoseek.init = Date.now();
+      // (dir * autoseek.vel): different signs = negative product
+      // so if the product is negative, the vector has changed
+      // if vector has changed, (1 / velBy) inverts the factor shifting the velocity backward
+      // parseInt prevents fractional values
+      // '|| -seek.vel' prevents vel from ever hitting 0 and instead flips the sign
+      autoseek.vel = parseInt(autoseek.vel * (((autoseek.dir * autoseek.vel) > 0) ? velBy : (1 / velBy))) || -autoseek.vel;
     }
 
   }
@@ -225,10 +222,9 @@ vwrap.addEventListener('keyup', function (e) {
 
   // play/pause on keyup so it doesn't keep repeating, as it would on a keydown
   if (/\s/.test(e.key)) { // play/pause
-    if (seek.vel) { // clear seek if one is in progress
-      seek.init = 0;
-      seek.vel = 0;
-      seek.auto = false;
+    if (autoseek.vel) { // clear seek if one is in progress
+      autoseek.init = 0;
+      autoseek.vel = 0;
     }
     v[v.paused ? 'play' : 'pause']();
   }
@@ -241,20 +237,19 @@ vwrap.addEventListener('keyup', function (e) {
 
     var dir = /left/i.test(e.key) ? -1 : 1;
 
-    if (!seek.auto) {
-      seek.init = 0;
+    if (!autoseek.vel) {
       v.currentTime += dir * skipBy;
     }
-    else if (seek.auto && seek.init &&
-          ((Date.now() - seek.init) >= (autoOffDelay * 1000))) {
-      // reset all
-      seek.init = 0;
-      seek.vel = 0;
-      seek.auto = false;
-      seek.paused || v.play();
+
+    if (autoseek.vel && autoseek.init &&
+       ((Date.now() - autoseek.init) >= (autoOffDelay * 1000))) {
+      autoseek.vel = 0;
+      autoseek.paused || v.play();
     }
-    else if (seek.auto && seek.init) {
-      seek.init = 0;
+    // make sure the button being released is the same
+    // as the one currently affecting the velocity
+    if ((dir * autoseek.dir) > 0) {
+      autoseek.init = 0;
     }
   }
 });
