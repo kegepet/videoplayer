@@ -1,10 +1,10 @@
-function kvp_videoplayer(vwrap) { // 'kepe video player' namespace
+function kvp_videoplayer(vwrap, settings) { // 'kepe video player' namespace
 ////////////////////////////////////////////////////////
-var uiOffDelay = this.uiOffDelay = 1; // delay in secs before ui box goes off after a mouseleave
-var skipBy = this.skipBy = 10; // seconds to skip forward or backward
-var velBy = this.velBy = 3; // factor to multiple seek velocity by at each increment
-var autoOnDelay = this.autoOnDelay = 1; // in seconds
-var autoOffDelay = this.autoOffDelay = 2.5;
+var uiOffDelay = this.uiOffDelay = settings.uiOffDelay || 1; // delay in secs before ui box goes off after a mouseleave
+var skipBy = this.skipBy = settings.skipBy || 10; // seconds to skip forward or backward
+var velBy = this.velBy = settings.velBy || 3; // factor to multiply seek velocity by at each increment
+var autoOnDelay = this.autoOnDelay = settings.autoOnDelay || 1; // in seconds
+var autoOffDelay = this.autoOffDelay = settings.autoOffDelay || 2.5;
 
 this.vwrap = vwrap;
 vwrap.tabIndex = 1;
@@ -293,7 +293,7 @@ window.addEventListener('mousemove', function (e) {
 });
 
 
-// control panel/timeline visibility
+// show/hide ui
 vwrap.addEventListener('mouseenter', function (e) {
   clearTimeout(ui.timeout);
   ui.className = ui.className.replace(/\soff|\son|$/, ' on');
@@ -309,8 +309,17 @@ vwrap.addEventListener('mouseleave', function (e) {
 // END KVP VIDEO PLAYER CLASS /////////////////
 }
 
-window.addEventListener('load', function (e) {
-  //setTimeout(function () {
-    this.kvp = new kvp_videoplayer(document.querySelector('.kvp-vwrap'));
-  //}, 100);
-}.bind(this));
+document.addEventListener('DOMContentLoaded', function (e) {
+    var vs = document.querySelectorAll('[data-kvp]');
+    [].forEach.call(vs, function (item) {
+      try {
+        var settings = JSON.parse(item.getAttribute('data-kvp'));
+      }
+      catch (e) {
+        return;
+      }
+      item.querySelector('video').addEventListener('canplay', function(e) {
+        (window.kvp = window.kvp || []).push(new kvp_videoplayer(item, settings));
+      });
+    });
+});

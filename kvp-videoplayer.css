@@ -1,9 +1,9 @@
 
-.kvp-vwrap * {
+[data-kvp] * {
   position: absolute;
   box-sizing: border-box;
 }
-.kvp-vwrap video {
+[data-kvp] video {
   width: 855px;
   height: 480px;
 }

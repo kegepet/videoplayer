@@ -11,7 +11,7 @@
     font-family: sans-serif;
   }
 
-  .kvp-vwrap {
+  [data-kvp] {
     width: 855px;
     height: 480px;
     position: absolute;
@@ -30,8 +30,8 @@
 
 <body>
 
-<div class="kvp-vwrap">
-<video data-title="Just a Test Video">
+<div data-kvp='{"video_title":"Just a Test Video"}'>
+<video>
   <source src="./sample-video.mp4" type="video/mp4">
 </video>
 </div>
