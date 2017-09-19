@@ -318,7 +318,8 @@ document.addEventListener('DOMContentLoaded', function (e) {
       catch (e) {
         return;
       }
-      item.querySelector('video').addEventListener('canplay', function(e) {
+      item.querySelector('video').addEventListener('loadeddata', function(e) {
+        console.log('hello');
         (window.kvp = window.kvp || []).push(new kvp_videoplayer(item, settings));
       });
     });
