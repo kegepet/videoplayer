@@ -319,7 +319,6 @@ document.addEventListener('DOMContentLoaded', function (e) {
         return;
       }
       item.querySelector('video').addEventListener('loadeddata', function(e) {
-        console.log('hello');
         (window.kvp = window.kvp || []).push(new kvp_videoplayer(item, settings));
       });
     });
