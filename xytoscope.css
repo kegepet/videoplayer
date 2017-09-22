@@ -1,13 +1,13 @@
 
-[data-kvp] * {
+[data-xytoscope] * {
   position: absolute;
   box-sizing: border-box;
 }
-[data-kvp] video {
+[data-xytoscope] video {
   width: 855px;
   height: 480px;
 }
-.kvp-ui {
+.xyt-ui {
   height: 50px; /* keyframe should match */
   bottom: -50px; /* this will change to 0 when turned on */
   left: 0;
@@ -15,107 +15,107 @@
   background-color: rgba(0,0,0,0.65);
   font-size: 0.8em;
 }
-@keyframes kvp_ui_on {
+@keyframes xyt_ui_on {
   from {bottom: -50px}
     to   {bottom: 0}
 }
-@keyframes kvp_ui_off {
+@keyframes xyt_ui_off {
   from {bottom: 0}
     to   {bottom: -50px}
 }
-.kvp-ui.on {
-  animation-name: kvp_ui_on;
+.xyt-ui.on {
+  animation-name: xyt_ui_on;
   animation-duration: 0.2s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
 }
-.kvp-ui.off {
-  animation-name: kvp_ui_off;
+.xyt-ui.off {
+  animation-name: xyt_ui_off;
   animation-duration: 0.2s;
   animation-timing-function: ease-in;
   animation-fill-mode: both;
 }
-.kvp-highlight-edit {
+.xyt-highlight-edit {
   height: 70px;
   top: -70px;
   width: 100%;
   background-color: rgba(0,0,0,0.65);
   overflow: hidden;
 }
-@keyframes kvp_highlight_edit_on {
+@keyframes xyt_highlight_edit_on {
   from {top: 0; height: 0}
     to {top: -70px; height: 70px}
 }
-@keyframes kvp_highlight_edit_off {
+@keyframes xyt_highlight_edit_off {
   from {top: -70px; height: 70px}
     to {top: 0; height: 0}
 }
-.kvp-highlight-edit.on {
-  animation-name: kvp_highlight_edit_on;
+.xyt-highlight-edit.on {
+  animation-name: xyt_highlight_edit_on;
   animation-duration: 0.1s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
 }
-.kvp-highlight-edit.off {
-  animation-name: kvp_highlight_edit_off;
+.xyt-highlight-edit.off {
+  animation-name: xyt_highlight_edit_off;
   animation-duration: 0.1s;
   animation-timing-function: ease-in;
   animation-fill-mode: both;
   animation-delay: 0.5s;
 }
-@keyframes kvp_highlight_edit_contents_on {
+@keyframes xyt_highlight_edit_contents_on {
   from {opacity: 0}
     to {opacity: 1}
 }
-@keyframes kvp_highlight_edit_contents_off {
+@keyframes xyt_highlight_edit_contents_off {
   from {opacity: 1}
     to {opacity: 0}
 }
-.kvp-highlight-edit.on * {
-  animation-name: kvp_highlight_edit_contents_on;
+.xyt-highlight-edit.on * {
+  animation-name: xyt_highlight_edit_contents_on;
   animation-duration: 0.5s;
   animation-timing-function: ease-out;
   animation-fill-mode: both;
   animation-delay: 0.1s;
 }
-.kvp-highlight-edit.off * {
-  animation-name: kvp_highlight_edit_contents_off;
+.xyt-highlight-edit.off * {
+  animation-name: xyt_highlight_edit_contents_off;
   animation-duration: 0.5s;
   animation-timing-function: ease-in;
   animation-fill-mode: both;
 }
 
 
-.kvp-highlight-edit * {
+.xyt-highlight-edit * {
   position: relative;
 }
 
-.kvp-highlight-edit > * {
+.xyt-highlight-edit > * {
   display: inline-block;
   vertical-align: top;
   height: 100%;
   padding: 3px 5px;
 }
 
-.kvp-highlight-edit > *:nth-child(1) {
+.xyt-highlight-edit > *:nth-child(1) {
   width: 60%;
   text-align: right;
 }
 
-.kvp-highlight-edit > *:nth-child(2) {
+.xyt-highlight-edit > *:nth-child(2) {
   width: 20%;
   text-align: center;
 }
 
-.kvp-highlight-edit > *:nth-child(3) {
+.xyt-highlight-edit > *:nth-child(3) {
   width: 20%;
 }
 
-.kvp-highlight-edit *::placeholder {
+.xyt-highlight-edit *::placeholder {
   font-style: italic;
 }
 
-.kvp-highlight-edit-note {
+.xyt-highlight-edit-note {
   width: 100%;
   min-width: 200px;
   max-width: 400px;
@@ -127,7 +127,7 @@
   font-size: 0.8em;
 }
 
-.kvp-highlight-edit input[type="text"] {
+.xyt-highlight-edit input[type="text"] {
   width: 120px;
   padding: 3px 4px;
   background-color: rgba(0,0,0,0.4);
@@ -135,17 +135,17 @@
   color: #333;
   font-size: 1em;
 }
-.kvp-highlight-edit-start {
+.xyt-highlight-edit-start {
   margin-bottom: 10px;
 }
-.kvp-highlight-edit-end {
+.xyt-highlight-edit-end {
 
 }
 
 
-.kvp-highlight-edit-save,
-.kvp-highlight-edit-discard,
-.kvp-highlight-edit-cancel {
+.xyt-highlight-edit-save,
+.xyt-highlight-edit-discard,
+.xyt-highlight-edit-cancel {
   width: 80px;
   margin-bottom: 2px;
   padding: 2px 4px;
@@ -158,7 +158,7 @@
 }
 
 
-.kvp-timeline {
+.xyt-timeline {
   height: 9px;
   top: 7px;
   left: 5px;
@@ -168,54 +168,54 @@
 }
 
 /* transient, automatic ranges */
-.kvp-ranges {
+.xyt-ranges {
   width: 100%;
   height: 100%;
 }
-.kvp-buffered {
+.xyt-buffered {
   height: 100%;
   background-color: rgb(128, 63, 193);
 }
-.kvp-played {
+.xyt-played {
   height: 2px;
   bottom: -1px;
   background-color: rgb(174, 156, 191); /* nice if it matches the playhead */
 }
 
 /* user-defined ranges */
-.kvp-highlights {
+.xyt-highlights {
   height: 3px;
   top: -2px;
   color: rgb(255, 196, 71);
 }
 
-.kvp-playhead {
+.xyt-playhead {
   width: 6px;
   height: 11px;
   left: -3px; /* half the width */
   top: -1px;
   background-color: rgb(174, 156, 191);
 }
-.kvp-video-title, .kvp-time-info {
+.xyt-video-title, .xyt-time-info {
   top: 25px;
 }
-.kvp-video-title {
+.xyt-video-title {
   width: 200px;
   left: 10px;
   font-size: 1.2em;
 }
-.kvp-time-info {
+.xyt-time-info {
   right: 10px;
   white-space: nowrap;
   cursor: default;
   user-select: none;
 }
-.kvp-time-info div {
+.xyt-time-info div {
   position: relative;
   display: inline;
   margin: 0;
   padding: 0;
 }
-.kvp-duration::before {
+.xyt-duration::before {
   content: " / ";
 }

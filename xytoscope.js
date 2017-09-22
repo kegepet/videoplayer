@@ -1,4 +1,4 @@
-function kvp_videoplayer(vwrap, settings) { // 'kepe video player' namespace
+function xytoscope(vwrap, settings) { // 'kepe video player' namespace
 ////////////////////////////////////////////////////////
 var uiOffDelay = this.uiOffDelay = settings.uiOffDelay || 1; // delay in secs before ui box goes off after a mouseleave
 var skipBy = this.skipBy = settings.skipBy || 10; // seconds to skip forward or backward
@@ -14,51 +14,51 @@ var v = this.v = vwrap.querySelector('video');
 // CREATE ELEMENTS
 // outer container
 var ui = this.ui = document.createElement('div');
-ui.className = 'kvp-ui';
+ui.className = 'xyt-ui';
 ui.innerHTML = '\
-<div class="kvp-timeline">\
-  <div class="kvp-ranges"></div>\
-  <div class="kvp-playhead"></div>\
+<div class="xyt-timeline">\
+  <div class="xyt-ranges"></div>\
+  <div class="xyt-playhead"></div>\
 </div>\
-<div class="kvp-video-title"></div>\
-<div class="kvp-add-highlight-button"></div>\
-<div class="kvp-time-info">\
-  <div class="kvp-current-time"></div>\
-  <div class="kvp-duration"></div>\
+<div class="xyt-video-title"></div>\
+<div class="xyt-add-highlight-button"></div>\
+<div class="xyt-time-info">\
+  <div class="xyt-current-time"></div>\
+  <div class="xyt-duration"></div>\
 </div>\
-<div class="kvp-highlight-edit">\
+<div class="xyt-highlight-edit">\
   <div>\
-    <textarea class="kvp-highlight-edit-note" placeholder="Leave your note here."></textarea>\
+    <textarea class="xyt-highlight-edit-note" placeholder="Leave your note here."></textarea>\
   </div>\
   <div>\
-    <input class="kvp-highlight-edit-start" type="text" placeholder="start time">\
-    <input class="kvp-highlight-edit-end" type="text" placeholder="end time">\
+    <input class="xyt-highlight-edit-start" type="text" placeholder="start time">\
+    <input class="xyt-highlight-edit-end" type="text" placeholder="end time">\
   </div>\
   <div>\
-    <div class="kvp-highlight-edit-save">SAVE</div>\
-    <div class="kvp-highlight-edit-discard">DISCARD</div>\
-    <div class="kvp-highlight-edit-cancel">CANCEL</div>\
+    <div class="xyt-highlight-edit-save">SAVE</div>\
+    <div class="xyt-highlight-edit-discard">DISCARD</div>\
+    <div class="xyt-highlight-edit-cancel">CANCEL</div>\
   </div>\
 </div>\
 '.replace(/>[\s\t\n]*([^<>\s\t\n]+(?:\s+[^<>\s\t\n]+)*)?[\s\t\n]*</g, '>$1<');
 
 
 vwrap.appendChild(ui);
-var tl = this.tl = ui.querySelector('.kvp-timeline');
-var ranges = this.ranges = ui.querySelector('.kvp-ranges');
-var ph = this.ph = ui.querySelector('.kvp-playhead');
+var tl = this.tl = ui.querySelector('.xyt-timeline');
+var ranges = this.ranges = ui.querySelector('.xyt-ranges');
+var ph = this.ph = ui.querySelector('.xyt-playhead');
 ph.w = ph.getBoundingClientRect().width;
-var vt = this.vt = ui.querySelector('.kvp-video-title');
-var ti = this.ti = ui.querySelector('.kvp-time-info');
-var cur = this.cur = ui.querySelector('.kvp-current-time');
-var dur = this.dur = ui.querySelector('.kvp-duration');
-var hledit = this.hledit = ui.querySelector('.kvp-highlight-edit');
-hledit.note = hledit.querySelector('.kvp-highlight-edit-note');
-hledit.start = hledit.querySelector('.kvp-highlight-edit-start');
-hledit.end = hledit.querySelector('.kvp-highlight-edit-end');
-hledit.save = hledit.querySelector('.kvp-highlight-edit-save');
-hledit.discard = hledit.querySelector('.kvp-highlight-edit-discard');
-hledit.cancel = hledit.querySelector('.kvp-highlight-edit-cancel');
+var vt = this.vt = ui.querySelector('.xyt-video-title');
+var ti = this.ti = ui.querySelector('.xyt-time-info');
+var cur = this.cur = ui.querySelector('.xyt-current-time');
+var dur = this.dur = ui.querySelector('.xyt-duration');
+var hledit = this.hledit = ui.querySelector('.xyt-highlight-edit');
+hledit.note = hledit.querySelector('.xyt-highlight-edit-note');
+hledit.start = hledit.querySelector('.xyt-highlight-edit-start');
+hledit.end = hledit.querySelector('.xyt-highlight-edit-end');
+hledit.save = hledit.querySelector('.xyt-highlight-edit-save');
+hledit.discard = hledit.querySelector('.xyt-highlight-edit-discard');
+hledit.cancel = hledit.querySelector('.xyt-highlight-edit-cancel');
 
 
 // reuseable utility internals
@@ -130,14 +130,14 @@ anim.addToFrame(function () {
   tl.rect = tl.getBoundingClientRect();
   var c = ranges;
   ranges = this.ranges = document.createElement('div');
-  ranges.className = 'kvp-ranges';
+  ranges.className = 'xyt-ranges';
 
   ['buffered', 'played'].forEach(function (rangeType) {
 
     for (var i = 0; i < v[rangeType].length; i++) {
 
       var r = document.createElement('div');
-      r.className = 'kvp-' + rangeType;
+      r.className = 'xyt-' + rangeType;
       var s = v[rangeType].start(i) / v.duration;
       var e = v[rangeType].end(i) / v.duration;
       r.style.left = tl.rect.width * s + 'px';
@@ -306,20 +306,20 @@ vwrap.addEventListener('mouseleave', function (e) {
 });
 
 
-// END KVP VIDEO PLAYER CLASS /////////////////
+// END xyt VIDEO PLAYER CLASS /////////////////
 }
 
 document.addEventListener('DOMContentLoaded', function (e) {
-    var vs = document.querySelectorAll('[data-kvp]');
+    var vs = document.querySelectorAll('[data-xytoscope]');
     [].forEach.call(vs, function (item) {
       try {
-        var settings = JSON.parse(item.getAttribute('data-kvp'));
+        var settings = JSON.parse(item.getAttribute('data-xytoscope'));
       }
       catch (e) {
         return;
       }
       item.querySelector('video').addEventListener('loadeddata', function(e) {
-        (window.kvp = window.kvp || []).push(new kvp_videoplayer(item, settings));
+        (window.xyt = window.xyt || []).push(new xytoscope(item, settings));
       });
     });
 });
