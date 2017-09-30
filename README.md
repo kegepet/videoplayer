@@ -1,4 +1,6 @@
 # xytoscope
 Just an HTML5 video player with a few nifty features.
 
-*This project is incomplete.*
+**Live demo of xytoscope:** http://kepe.org/xytoscope
+
+*This project is incomplete*
