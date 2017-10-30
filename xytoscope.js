@@ -1,4 +1,4 @@
-function xytoscope(vwrap, settings) { // 'kepe video player' namespace
+function xytoscope(vwrap, settings) { // xytoscope class
 ////////////////////////////////////////////////////////
 var uiOffDelay = this.uiOffDelay = settings.uiOffDelay || 1; // delay in secs before ui box goes off after a mouseleave
 var skipBy = this.skipBy = settings.skipBy || 10; // seconds to skip forward or backward
@@ -40,7 +40,7 @@ ui.innerHTML = '\
     <div class="xyt-highlight-edit-cancel">CANCEL</div>\
   </div>\
 </div>\
-'.replace(/>[\s\t\n]*([^<>\s\t\n]+(?:\s+[^<>\s\t\n]+)*)?[\s\t\n]*</g, '>$1<');
+'.replace(/>\s*([^<\s]+(?:\s+[^<\s]+)*)\s*</g, '>$1<').replace(/\s+/g, ' '); // also strip internal excess whitespace
 
 
 vwrap.appendChild(ui);
@@ -140,8 +140,8 @@ anim.addToFrame(function () {
       r.className = 'xyt-' + rangeType;
       var s = v[rangeType].start(i) / v.duration;
       var e = v[rangeType].end(i) / v.duration;
-      r.style.left = tl.rect.width * s + 'px';
-      r.style.width = tl.rect.width * (e - s) + 'px';
+      r.style.left = s * 100 + '%';// using % allows for scaling
+      r.style.width = (e - s) * 100 + '%';
       ranges.appendChild(r);
     }
   });
@@ -210,9 +210,9 @@ vwrap.addEventListener('keydown', function (e) {
       // (dir * autoseek.vel): different signs = negative product
       // so if the product is negative, the vector has changed
       // if vector has changed, (1 / velBy) inverts the factor shifting the velocity backward
-      // parseInt prevents fractional values
+      // Math.floor prevents fractional values
       // '|| -seek.vel' prevents vel from ever hitting 0 and instead flips the sign
-      autoseek.vel = parseInt(autoseek.vel * (((autoseek.dir * autoseek.vel) > 0) ? velBy : (1 / velBy))) || -autoseek.vel;
+      autoseek.vel = Math.floor(autoseek.vel * (((autoseek.dir * autoseek.vel) > 0) ? velBy : (1 / velBy))) || -autoseek.vel;
     }
 
   }
@@ -221,7 +221,7 @@ vwrap.addEventListener('keydown', function (e) {
 vwrap.addEventListener('keyup', function (e) {
 
   // play/pause on keyup so it doesn't keep repeating, as it would on a keydown
-  if (/\s/.test(e.key)) { // play/pause
+  if (/ /.test(e.key)) { // play/pause
     if (autoseek.vel) { // clear seek if one is in progress
       autoseek.init = 0;
       autoseek.vel = 0;
@@ -296,12 +296,12 @@ window.addEventListener('mousemove', function (e) {
 // show/hide ui
 vwrap.addEventListener('mouseenter', function (e) {
   clearTimeout(ui.timeout);
-  ui.className = ui.className.replace(/\soff|\son|$/, ' on');
+  ui.className = ui.className.replace(/ off| on|$/, ' on');
 });
 vwrap.addEventListener('mouseleave', function (e) {
 
   ui.timeout = setTimeout(function () {
-    ui.className = ui.className.replace(/\son|\soff|$/, ' off');
+    ui.className = ui.className.replace(/ on| off|$/, ' off');
   }, uiOffDelay * 1000);
 });
 
